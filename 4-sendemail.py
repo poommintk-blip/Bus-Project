@@ -20,15 +20,15 @@ SMTP_HOST     = "smtp.gmail.com"
 SMTP_PORT     = 587
 EMAIL_SENDER  = "poommin.tk@gmail.com"          # ← เปลี่ยนเป็นอีเมลของคุณ (ต้องเป็น Gmail และสร้าง App Password แล้ว)
 EMAIL_PASSWORD = "uvta yuyz ylah ovws"          # Gmail App Password
-#EMAIL_RECIPIENTS = ["poommin.tk@gmail.com"]     # ← เพิ่มอีเมลปลายทางได้ที่นี่
-EMAIL_RECIPIENTS = ["sans78r@gmail.com", "poommin.tk@gmail.com", "thitimasakoonram@gmail.com"]  # ตัวอย่างส่งถึงหลายคน
+EMAIL_RECIPIENTS = ["poommin.tk@gmail.com"]     # ← เพิ่มอีเมลปลายทางได้ที่นี่
+#EMAIL_RECIPIENTS = ["sans78r@gmail.com", "poommin.tk@gmail.com", "thitimasakoonram@gmail.com"]  # ตัวอย่างส่งถึงหลายคน
 
 
 # รถถือว่า "จอด" เมื่อ speed = 0 ติดต่อกัน STOP_CONFIRM_SECONDS วินาที
 STOP_CONFIRM_SECONDS = 10
 
 # cooldown: ไม่ส่งซ้ำภายใน N วินาที (ต่อคัน) หลังส่งแล้ว
-NOTIFY_COOLDOWN_SECONDS = 120
+NOTIFY_COOLDOWN_SECONDS = 360
 
 # ─────────────────────────────────────────────
 # INTERNAL STATE

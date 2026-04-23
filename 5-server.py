@@ -335,7 +335,7 @@ def send_email(to_email: str, to_name: str, bus_name: str, route: str,
 </style></head>
 <body><div class="wrap"><div class="card">
   <div class="top">
-    <h1>🚌 รถเมล์จอดที่ป้าย!</h1>
+    <h1>รถเมล์จอดที่ป้าย!</h1>
     <p>{timestamp}</p>
   </div>
   <div class="body">
@@ -362,10 +362,10 @@ def send_email(to_email: str, to_name: str, bus_name: str, route: str,
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as s:
             s.ehlo(); s.starttls(); s.login(EMAIL_SENDER, EMAIL_PASSWORD)
             s.sendmail(EMAIL_SENDER, to_email, msg.as_bytes())
-        print(f"[{now_str()}] ✅ Email sent → {to_email} ({bus_name})")
+        print(f"[{now_str()}] Email sent → {to_email} ({bus_name})")
         return True
     except Exception as e:
-        print(f"[{now_str()}] ❌ Email error: {e}")
+        print(f"[{now_str()}] Email error: {e}")
         return False
 
 # ─────────────────────────────────────────────
@@ -455,7 +455,7 @@ def check_and_notify(entity_id: str):
         args=(entity_id, name, route, lat, lon, status, seats),
         daemon=True,
     ).start()
-    print(f"[{now_str()}] 🚨 {name} จอด (status={status}) — กำลังแจ้งเตือน users...")
+    print(f"[{now_str()}] {name} จอด (status={status}) — กำลังแจ้งเตือน users...")
 
 
 # ─────────────────────────────────────────────
@@ -503,7 +503,7 @@ def merge_entity(item: dict):
 
 
 def on_open(ws):
-    print(f"[{now_str()}] 🔗 WebSocket connected")
+    print(f"[{now_str()}] WebSocket connected")
     ensure_token()
     ws.send(json.dumps({"authCmd": {"cmdId": 0, "token": token_info["token"]}}))
     ws.send(json.dumps(build_subscribe_payload()))
@@ -523,7 +523,7 @@ def on_message(ws, message):
         for item in msg["data"]["data"]:
             merge_entity(item)
             check_and_notify(item["entityId"]["id"])
-        print(f"[{now_str()}] 📦 Snapshot: {len(msg['data']['data'])} buses")
+        print(f"[{now_str()}] Snapshot: {len(msg['data']['data'])} buses")
 
     if msg.get("update"):
         for item in msg["update"]:
@@ -536,7 +536,7 @@ def on_error(ws, error):
 
 
 def on_close(ws, code, msg):
-    print(f"[{now_str()}] 🔌 WS closed: {code}")
+    print(f"[{now_str()}] WS closed: {code}")
 
 
 def ws_loop():
@@ -576,7 +576,10 @@ if __name__ == "__main__":
     init_db()
     threading.Thread(target=token_watcher, daemon=True).start()
     threading.Thread(target=ws_loop, daemon=True).start()
+    
+    port_number = 5001
+    
     print("=" * 55)
-    print("  🚌  Bus Notifier Server  |  http://localhost:5000")
+    print("  Bus Notifier Server  |  http://localhost:{port_number}")
     print("=" * 55)
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=port_number, debug=False)

@@ -31,7 +31,6 @@
     overflow-x: hidden;
   }
 
-  /* ── background grid ── */
   body::before {
     content: '';
     position: fixed; inset: 0;
@@ -42,7 +41,6 @@
     pointer-events: none; z-index: 0;
   }
 
-  /* ── TOPBAR ── */
   .topbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     background: rgba(11,18,32,.85);
@@ -72,11 +70,9 @@
   }
   .chip b { color: var(--text); }
 
-  /* ── PAGES ── */
   .page { display: none; }
   .page.active { display: block; }
 
-  /* ── AUTH PAGE ── */
   .auth-wrap {
     min-height: 100vh;
     display: flex; align-items: center; justify-content: center;
@@ -161,7 +157,6 @@
   .msg.error   { background: #ef44441a; border: 1px solid #ef444440; color: #f87171; display: block; }
   .msg.success { background: #22c55e1a; border: 1px solid #22c55e40; color: #4ade80; display: block; }
 
-  /* ── DASHBOARD ── */
   .dash {
     padding: 80px 24px 40px;
     max-width: 1100px; margin: 0 auto;
@@ -172,14 +167,10 @@
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
   }
-  .dash-header h2 {
-    font-size: 24px; font-weight: 700;
-  }
+  .dash-header h2 { font-size: 24px; font-weight: 700; }
   .dash-header h2 span { color: var(--accent); }
 
-  .toggle-wrap {
-    display: flex; align-items: center; gap: 10px;
-  }
+  .toggle-wrap { display: flex; align-items: center; gap: 10px; }
   .toggle-label { font-size: 14px; color: var(--muted); }
 
   .toggle {
@@ -199,7 +190,6 @@
   }
   .toggle.on::after { left: 25px; }
 
-  /* ── CARDS GRID ── */
   .section-title {
     font-family: var(--mono);
     font-size: 11px; font-weight: 700;
@@ -208,9 +198,7 @@
     margin-bottom: 16px;
     display: flex; align-items: center; gap: 8px;
   }
-  .section-title::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   .bus-grid {
     display: grid;
@@ -244,9 +232,7 @@
     font-family: var(--mono); font-size: 16px; font-weight: 700;
     color: var(--text); margin-bottom: 4px;
   }
-  .bus-route {
-    font-size: 12px; color: var(--muted); margin-bottom: 14px;
-  }
+  .bus-route { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
 
   .bus-status {
     display: inline-flex; align-items: center; gap: 6px;
@@ -267,11 +253,9 @@
   @keyframes pulse-r { 0%,100%{opacity:1} 50%{opacity:.3} }
 
   .bus-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .meta-item { }
   .meta-item .k { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
   .meta-item .v { font-size: 13px; font-family: var(--mono); color: var(--text); }
 
-  /* ── NOTIFICATIONS ── */
   .notif-list { display: flex; flex-direction: column; gap: 10px; }
 
   .notif-item {
@@ -292,9 +276,7 @@
 
   .notif-info { flex: 1; }
   .notif-info .bus { font-weight: 700; font-size: 15px; }
-  .notif-info .detail {
-    font-size: 12px; color: var(--muted); margin-top: 2px;
-  }
+  .notif-info .detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .notif-time {
     font-family: var(--mono); font-size: 11px; color: var(--muted);
     text-align: right; flex-shrink: 0;
@@ -306,7 +288,6 @@
   }
   .empty-state .icon { font-size: 40px; display:block; margin-bottom: 12px; opacity: .5; }
 
-  /* ── LOGOUT BTN ── */
   .btn-logout {
     padding: 6px 16px;
     background: transparent;
@@ -318,7 +299,6 @@
   }
   .btn-logout:hover { border-color: var(--accent2); color: #f87171; }
 
-  /* ── REFRESH ── */
   .btn-refresh {
     padding: 8px 18px;
     background: var(--card); border: 1px solid var(--border);
@@ -331,7 +311,6 @@
   .spin { animation: spin .8s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── RESPONSIVE ── */
   @media (max-width: 600px) {
     .auth-body { padding: 20px; }
     .dash { padding: 72px 16px 40px; }
@@ -341,7 +320,6 @@
 </head>
 <body>
 
-<!-- ═══════════════ TOPBAR ═══════════════ -->
 <div class="topbar">
   <div class="logo">🚌 <span>Bus</span>Alert</div>
   <div class="topbar-right" id="topbarRight" style="display:none">
@@ -350,7 +328,6 @@
   </div>
 </div>
 
-<!-- ═══════════════ AUTH PAGE ═══════════════ -->
 <div class="page active" id="pageAuth">
   <div class="auth-wrap">
     <div class="auth-box">
@@ -359,42 +336,35 @@
         <h1>Bus Alert</h1>
         <p>ระบบแจ้งเตือนรถเมล์จอด ผ่านอีเมล</p>
       </div>
-
       <div class="auth-tabs">
         <div class="auth-tab active" onclick="switchTab('login')">เข้าสู่ระบบ</div>
         <div class="auth-tab" onclick="switchTab('register')">สมัครสมาชิก</div>
       </div>
-
       <div class="auth-body">
-        <!-- LOGIN -->
         <div id="formLogin">
           <div class="form-group">
             <label>อีเมล</label>
-            <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+            <input type="email" id="loginEmail" placeholder="your@email.com">
           </div>
           <div class="form-group">
             <label>รหัสผ่าน</label>
-            <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
-                   onkeydown="if(event.key==='Enter')doLogin()">
+            <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
           </div>
           <button class="btn-primary" onclick="doLogin()" id="btnLogin">เข้าสู่ระบบ</button>
           <div class="msg" id="loginMsg"></div>
         </div>
-
-        <!-- REGISTER -->
         <div id="formRegister" style="display:none">
           <div class="form-group">
             <label>ชื่อ-นามสกุล</label>
             <input type="text" id="regName" placeholder="กรอกชื่อของคุณ">
           </div>
           <div class="form-group">
-            <label>อีเมล <span style="color:var(--muted);font-size:12px">(ใช้รับแจ้งเตือน)</span></label>
-            <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+            <label>อีเมล</label>
+            <input type="email" id="regEmail" placeholder="your@email.com">
           </div>
           <div class="form-group">
-            <label>รหัสผ่าน <span style="color:var(--muted);font-size:12px">(อย่างน้อย 6 ตัว)</span></label>
-            <input type="password" id="regPass" placeholder="••••••••"
-                   onkeydown="if(event.key==='Enter')doRegister()">
+            <label>รหัสผ่าน</label>
+            <input type="password" id="regPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()">
           </div>
           <button class="btn-primary" onclick="doRegister()" id="btnRegister">สมัครสมาชิก</button>
           <div class="msg" id="registerMsg"></div>
@@ -404,10 +374,8 @@
   </div>
 </div>
 
-<!-- ═══════════════ DASHBOARD ═══════════════ -->
 <div class="page" id="pageDash">
   <div class="dash">
-
     <div class="dash-header">
       <h2>สถานะรถเมล์ <span>สดๆ</span></h2>
       <div style="display:flex;gap:10px;align-items:center">
@@ -415,66 +383,41 @@
           <span class="toggle-label">รับแจ้งเตือน</span>
           <button class="toggle" id="toggleNotif" onclick="toggleNotification()"></button>
         </div>
-        <button class="btn-refresh" onclick="loadBuses()" id="refreshBtn">
-          ⟳ รีเฟรช
-        </button>
+        <button class="btn-refresh" onclick="loadBuses()" id="refreshBtn">⟳ รีเฟรช</button>
       </div>
     </div>
-
     <div class="section-title">รถทั้งหมด</div>
-    <div class="bus-grid" id="busGrid">
-      <div class="empty-state" style="grid-column:1/-1">
-        <span class="icon">🔄</span>กำลังโหลด...
-      </div>
-    </div>
-
+    <div class="bus-grid" id="busGrid"></div>
     <div class="section-title">ประวัติการแจ้งเตือน</div>
-    <div class="notif-list" id="notifList">
-      <div class="empty-state">
-        <span class="icon">🔔</span>ยังไม่มีการแจ้งเตือน
-      </div>
-    </div>
-
+    <div class="notif-list" id="notifList"></div>
   </div>
 </div>
 
 <script>
-const API = 'http://localhost:5000/api'
+// ⚠️ แก้ไข Port เป็น 5001 เพื่อเชื่อมต่อกับ Backend
+const API = 'http://localhost:5001/api'
 let currentUser  = null
 let currentToken = null
 let notifActive  = true
 let refreshTimer = null
 
-// ────────────────────────────────────
-// SESSION
-// ────────────────────────────────────
 function saveSession(token, user) {
-  currentToken = token
-  currentUser  = user
+  currentToken = token; currentUser = user
   localStorage.setItem('bus_token', token)
   localStorage.setItem('bus_user',  JSON.stringify(user))
 }
 
 function loadSession() {
-  const t = localStorage.getItem('bus_token')
-  const u = localStorage.getItem('bus_user')
-  if (t && u) {
-    currentToken = t
-    currentUser  = JSON.parse(u)
-    return true
-  }
+  const t = localStorage.getItem('bus_token'), u = localStorage.getItem('bus_user')
+  if (t && u) { currentToken = t; currentUser = JSON.parse(u); return true }
   return false
 }
 
 function clearSession() {
   currentToken = null; currentUser = null
-  localStorage.removeItem('bus_token')
-  localStorage.removeItem('bus_user')
+  localStorage.removeItem('bus_token'); localStorage.removeItem('bus_user')
 }
 
-// ────────────────────────────────────
-// PAGES
-// ────────────────────────────────────
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
   document.getElementById(id).classList.add('active')
@@ -486,244 +429,128 @@ function showDash() {
   notifActive = currentUser.active !== false
   updateToggleUI()
   showPage('pageDash')
-  loadBuses()
-  loadNotifications()
+  loadBuses(); loadNotifications()
   clearInterval(refreshTimer)
   refreshTimer = setInterval(() => { loadBuses(); loadNotifications() }, 20000)
 }
 
-// ────────────────────────────────────
-// TABS
-// ────────────────────────────────────
 function switchTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach((t,i) =>
-    t.classList.toggle('active', (tab==='login') ? i===0 : i===1)
-  )
-  document.getElementById('formLogin').style.display    = tab==='login'    ? '' : 'none'
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login') ? i===0 : i===1))
+  document.getElementById('formLogin').style.display = tab==='login' ? '' : 'none'
   document.getElementById('formRegister').style.display = tab==='register' ? '' : 'none'
 }
 
-// ────────────────────────────────────
-// LOGIN
-// ────────────────────────────────────
 async function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim()
-  const pass  = document.getElementById('loginPass').value.trim()
-  const msgEl = document.getElementById('loginMsg')
-  const btn   = document.getElementById('btnLogin')
-  msgEl.className = 'msg'; msgEl.textContent = ''
-
+  const email = document.getElementById('loginEmail').value.trim(), pass = document.getElementById('loginPass').value.trim()
+  const msgEl = document.getElementById('loginMsg'), btn = document.getElementById('btnLogin')
   if (!email || !pass) { showMsg(msgEl,'error','กรุณากรอกข้อมูลให้ครบ'); return }
-
   btn.disabled = true; btn.textContent = 'กำลังเข้าสู่ระบบ...'
   try {
-    const res  = await fetch(`${API}/login`, {
+    const res = await fetch(`${API}/login`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({email, password: pass})
     })
     const data = await res.json()
-    if (!res.ok) { showMsg(msgEl,'error', data.error || 'เกิดข้อผิดพลาด'); return }
-    saveSession(data.token, data.user)
-    showDash()
-  } catch(e) {
-    showMsg(msgEl,'error','ไม่สามารถเชื่อมต่อ server ได้')
-  } finally {
-    btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ'
-  }
+    if (!res.ok) { showMsg(msgEl,'error', data.error); return }
+    saveSession(data.token, data.user); showDash()
+  } catch(e) { showMsg(msgEl,'error','ไม่สามารถเชื่อมต่อ server ได้') }
+  finally { btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ' }
 }
 
-// ────────────────────────────────────
-// REGISTER
-// ────────────────────────────────────
 async function doRegister() {
-  const name  = document.getElementById('regName').value.trim()
-  const email = document.getElementById('regEmail').value.trim()
-  const pass  = document.getElementById('regPass').value.trim()
-  const msgEl = document.getElementById('registerMsg')
-  const btn   = document.getElementById('btnRegister')
-  msgEl.className = 'msg'; msgEl.textContent = ''
-
+  const name = document.getElementById('regName').value.trim(), email = document.getElementById('regEmail').value.trim(), pass = document.getElementById('regPass').value.trim()
+  const msgEl = document.getElementById('registerMsg'), btn = document.getElementById('btnRegister')
   if (!name || !email || !pass) { showMsg(msgEl,'error','กรุณากรอกข้อมูลให้ครบ'); return }
-
   btn.disabled = true; btn.textContent = 'กำลังสมัคร...'
   try {
-    const res  = await fetch(`${API}/register`, {
+    const res = await fetch(`${API}/register`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({name, email, password: pass})
     })
     const data = await res.json()
-    if (!res.ok) { showMsg(msgEl,'error', data.error || 'เกิดข้อผิดพลาด'); return }
-    showMsg(msgEl,'success','✅ สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
-    setTimeout(() => switchTab('login'), 1500)
-    document.getElementById('loginEmail').value = email
-  } catch(e) {
-    showMsg(msgEl,'error','ไม่สามารถเชื่อมต่อ server ได้')
-  } finally {
-    btn.disabled = false; btn.textContent = 'สมัครสมาชิก'
-  }
+    if (!res.ok) { showMsg(msgEl,'error', data.error); return }
+    showMsg(msgEl,'success','✅ สมัครสำเร็จ! กรุณาเข้าสู่ระบบ'); setTimeout(() => switchTab('login'), 1500)
+  } catch(e) { showMsg(msgEl,'error','ไม่สามารถเชื่อมต่อ server ได้') }
+  finally { btn.disabled = false; btn.textContent = 'สมัครสมาชิก' }
 }
 
-// ────────────────────────────────────
-// LOGOUT
-// ────────────────────────────────────
 async function logout() {
   clearInterval(refreshTimer)
-  await fetch(`${API}/logout`, {
-    method:'POST', headers:{'Authorization':'Bearer '+currentToken}
-  }).catch(()=>{})
-  clearSession()
-  document.getElementById('topbarRight').style.display = 'none'
-  showPage('pageAuth')
+  await fetch(`${API}/logout`, { method:'POST', headers:{'Authorization':'Bearer '+currentToken} }).catch(()=>{})
+  clearSession(); document.getElementById('topbarRight').style.display = 'none'; showPage('pageAuth')
 }
 
-// ────────────────────────────────────
-// TOGGLE NOTIFICATION
-// ────────────────────────────────────
 async function toggleNotification() {
-  notifActive = !notifActive
-  updateToggleUI()
-  try {
-    await fetch(`${API}/subscribe`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentToken},
-      body: JSON.stringify({active: notifActive})
-    })
-  } catch(e) {}
+  notifActive = !notifActive; updateToggleUI()
+  await fetch(`${API}/subscribe`, {
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentToken},
+    body: JSON.stringify({active: notifActive})
+  }).catch(()=>{})
 }
 
-function updateToggleUI() {
-  const el = document.getElementById('toggleNotif')
-  el.classList.toggle('on', notifActive)
-}
+function updateToggleUI() { document.getElementById('toggleNotif').classList.toggle('on', notifActive) }
 
-// ────────────────────────────────────
-// LOAD BUSES
-// ────────────────────────────────────
 async function loadBuses() {
-  const btn = document.getElementById('refreshBtn')
-  btn.innerHTML = '<span class="spin">⟳</span> กำลังโหลด...'
+  const btn = document.getElementById('refreshBtn'); btn.innerHTML = '<span class="spin">⟳</span> กำลังโหลด...'
   try {
-    const res  = await fetch(`${API}/buses`)
-    const data = await res.json()
+    const res = await fetch(`${API}/buses`), data = await res.json()
     renderBuses(data)
-  } catch(e) {
-    document.getElementById('busGrid').innerHTML =
-      '<div class="empty-state" style="grid-column:1/-1"><span class="icon">⚠️</span>ไม่สามารถโหลดข้อมูลรถได้</div>'
-  } finally {
-    btn.innerHTML = '⟳ รีเฟรช'
-  }
+  } catch(e) { document.getElementById('busGrid').innerHTML = '<div class="empty-state">⚠️ โหลดข้อมูลล้มเหลว</div>' }
+  finally { btn.innerHTML = '⟳ รีเฟรช' }
 }
 
 function renderBuses(buses) {
   const grid = document.getElementById('busGrid')
-  if (!buses.length) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><span class="icon">🚌</span>ยังไม่มีข้อมูลรถ</div>'
-    return
-  }
-
+  if (!buses.length) { grid.innerHTML = '<div class="empty-state">🚌 ไม่มีข้อมูลรถ</div>'; return }
   grid.innerHTML = buses.map(b => {
     const st = (b.status || '').toLowerCase()
     const stopped = st.includes('stop') || st.includes('idle') || st.includes('จอด')
-    const moving  = !stopped && b.speed && parseFloat(b.speed) > 0
-
-    const statusClass = stopped ? 'stopped' : moving ? 'running' : 'unknown'
-    const pulseClass  = stopped ? 'red' : moving ? 'green' : 'gray'
-    const statusText  = stopped ? '🛑 จอด' : moving ? '🚌 กำลังวิ่ง' : '— ไม่ทราบ'
-
-    const lat  = b.lat  ? parseFloat(b.lat).toFixed(5)  : '-'
-    const lon  = b.lon  ? parseFloat(b.lon).toFixed(5)  : '-'
-    const spd  = b.speed ? parseFloat(b.speed).toFixed(1)+' km/h' : '-'
-    const mapsLink = b.lat && b.lon
-      ? `https://www.google.com/maps?q=${b.lat},${b.lon}`
-      : null
-
+    const moving = !stopped && b.speed && parseFloat(b.speed) > 0
+    // ⚠️ แก้ไขเครื่องหมาย ${ } ใน URL ของ Google Maps
+    const mapsLink = b.lat && b.lon ? `https://www.google.com/maps?q=${b.lat},${b.lon}` : null
     return `
     <div class="bus-card ${stopped ? 'stopped' : ''}">
-      <div class="bus-name">${b.name || b.id.slice(0,8)+'...'}</div>
-      <div class="bus-route">สาย ${b.route || '-'} ${b.label ? '· '+b.label : ''}</div>
-      <div class="bus-status ${statusClass}">
-        <span class="pulse ${pulseClass}"></span> ${statusText}
+      <div class="bus-name">${b.name || b.id.slice(0,8)}</div>
+      <div class="bus-route">สาย ${b.route || '-'}</div>
+      <div class="bus-status ${stopped ? 'stopped' : moving ? 'running' : 'unknown'}">
+        <span class="pulse ${stopped ? 'red' : moving ? 'green' : 'gray'}"></span> ${stopped ? '🛑 จอด' : moving ? '🚌 วิ่งอยู่' : '—'}
       </div>
       <div class="bus-meta">
-        <div class="meta-item"><div class="k">LATITUDE</div><div class="v">${lat}</div></div>
-        <div class="meta-item"><div class="k">LONGITUDE</div><div class="v">${lon}</div></div>
-        <div class="meta-item"><div class="k">SPEED</div><div class="v">${spd}</div></div>
-        <div class="meta-item"><div class="k">ที่นั่งว่าง</div><div class="v">${b.seats ?? '-'}</div></div>
+        <div class="meta-item"><div class="k">LAT</div><div class="v">${parseFloat(b.lat).toFixed(4)}</div></div>
+        <div class="meta-item"><div class="k">LON</div><div class="v">${parseFloat(b.lon).toFixed(4)}</div></div>
       </div>
-      ${mapsLink ? `<a href="${mapsLink}" target="_blank"
-          style="display:block;text-align:center;margin-top:14px;padding:8px;
-                 border:1px solid var(--border);border-radius:8px;
-                 color:var(--muted);font-size:12px;text-decoration:none;transition:all .2s"
-          onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-          📍 ดูใน Maps
-        </a>` : ''}
+      ${mapsLink ? `<a href="${mapsLink}" target="_blank" style="display:block;text-align:center;margin-top:10px;color:var(--accent);text-decoration:none;font-size:12px">📍 ดูใน Maps</a>` : ''}
     </div>`
   }).join('')
 }
 
-// ────────────────────────────────────
-// LOAD NOTIFICATIONS
-// ────────────────────────────────────
 async function loadNotifications() {
   try {
-    const res  = await fetch(`${API}/notifications`, {
-      headers:{'Authorization':'Bearer '+currentToken}
-    })
-    if (!res.ok) return
-    const data = await res.json()
-    renderNotifications(data)
+    const res = await fetch(`${API}/notifications`, { headers:{'Authorization':'Bearer '+currentToken} })
+    if (res.ok) renderNotifications(await res.json())
   } catch(e) {}
 }
 
 function renderNotifications(list) {
   const el = document.getElementById('notifList')
-  if (!list.length) {
-    el.innerHTML = '<div class="empty-state"><span class="icon">🔔</span>ยังไม่มีการแจ้งเตือน<br><small style="color:var(--muted)">ระบบจะส่งอีเมลเมื่อรถจอดที่ป้าย</small></div>'
-    return
-  }
-  el.innerHTML = list.map(n => {
-    const mapsLink = n.lat && n.lon
-      ? `https://www.google.com/maps?q=${n.lat},${n.lon}`
-      : null
-    const time = n.sent_at ? n.sent_at.replace('T',' ').slice(0,16) : '-'
-    return `
+  if (!list.length) { el.innerHTML = '<div class="empty-state">🔔 ยังไม่มีการแจ้งเตือน</div>'; return }
+  el.innerHTML = list.map(n => `
     <div class="notif-item">
       <div class="notif-icon">🚌</div>
       <div class="notif-info">
-        <div class="bus">${n.bus_name || '-'} ${n.route ? '· สาย '+n.route : ''}</div>
-        <div class="detail">
-          สถานะ: ${n.status || '-'} · ที่นั่งว่าง: ${n.seats ?? '-'}
-          ${mapsLink ? `· <a href="${mapsLink}" target="_blank" style="color:var(--accent)">Maps</a>` : ''}
-        </div>
+        <div class="bus">${n.bus_name} สาย ${n.route}</div>
+        <div class="detail">จอดแล้วเมื่อ ${n.sent_at}</div>
       </div>
-      <div class="notif-time">${time}</div>
-    </div>`
-  }).join('')
+    </div>`).join('')
 }
 
-// ────────────────────────────────────
-// HELPERS
-// ────────────────────────────────────
-function showMsg(el, type, text) {
-  el.className = `msg ${type}`
-  el.textContent = text
-}
+function showMsg(el, type, text) { el.className = `msg ${type}`; el.style.display = 'block'; el.textContent = text }
 
-// ────────────────────────────────────
-// INIT
-// ────────────────────────────────────
 window.onload = async () => {
   if (loadSession()) {
-    // verify token still valid
     try {
-      const res = await fetch(`${API}/me`, {
-        headers:{'Authorization':'Bearer '+currentToken}
-      })
-      if (res.ok) {
-        currentUser = await res.json()
-        showDash(); return
-      }
+      const res = await fetch(`${API}/me`, { headers:{'Authorization':'Bearer '+currentToken} })
+      if (res.ok) { currentUser = await res.json(); showDash(); return }
     } catch(e) {}
     clearSession()
   }
