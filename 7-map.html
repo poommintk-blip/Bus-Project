@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SUT BUS - Live Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 100vh; width: 100%; } /* ให้แผนที่เต็มหน้าจอ */
+        body { margin: 0; padding: 0; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 1. สร้างแผนที่เริ่มต้น
+        var map = L.map('map').setView([14.882, 102.021], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 2. ตัวแปรเก็บหมุดรถบัส (ป้องกันการสร้างหมุดซ้ำ)
+        var busMarkers = {};
+
+        // 3. ฟังก์ชันดึงข้อมูลจาก Python (API)
+        function updateBuses() {
+            fetch('/api/bus_locations') // วิ่งไปเรียก Route ใน app.py
+                .then(response => response.json())
+                .then(data => {
+                    for (let id in data) {
+                        let bus = data[id];
+                        let lat = bus.TIME_SERIES?.latitude?.value;
+                        let lon = bus.TIME_SERIES?.longitude?.value;
+                        let name = bus.ENTITY_FIELD?.name?.value || "Bus";
+
+                        if (lat && lon) {
+                            // ถ้ามีหมุดคันนี้อยู่แล้ว ให้ "ย้ายตำแหน่ง" (นี่คือส่วนที่ทำให้เห็นรถขยับ)
+                            if (busMarkers[id]) {
+                                busMarkers[id].setLatLng([lat, lon]);
+                            } else {
+                                // ถ้าเป็นรถคันใหม่ ให้สร้างหมุดใหม่
+                                busMarkers[id] = L.marker([lat, lon]).addTo(map)
+                                    .bindPopup(`<b>${name}</b>`);
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error("Error:", err));
+        }
+
+        // 4. *** หัวใจสำคัญ: สั่งให้ฟังก์ชันทำงานเองทุกๆ 2 วินาที ***
+        setInterval(updateBuses, 2000); 
+
+        // รันครั้งแรกทันทีที่เปิดหน้าเว็บ
+        updateBuses();
+    </script>
+</body>
+</html>

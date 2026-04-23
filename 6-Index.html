@@ -6,6 +6,7 @@
 <title>🚌 Bus Alert — ระบบแจ้งเตือนรถเมล์</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root {
     --bg:       #0b1220;
@@ -22,300 +23,72 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
   body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(249,115,22,.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(249,115,22,.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none; z-index: 0;
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(249,115,22,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,.04) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
   }
 
-  .topbar {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(11,18,32,.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-
-  .logo {
-    font-family: var(--mono);
-    font-size: 16px; font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 1px;
-  }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(11,18,32,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
   .logo span { color: var(--text); }
-
   .topbar-right { display: flex; align-items: center; gap: 12px; }
-
-  .chip {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 13px; color: var(--muted);
-  }
+  .chip { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 13px; color: var(--muted); }
   .chip b { color: var(--text); }
 
   .page { display: none; }
   .page.active { display: block; }
 
-  .auth-wrap {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 80px 20px 40px;
-    position: relative; z-index: 1;
-  }
-
-  .auth-box {
-    width: 100%; max-width: 420px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 24px 80px rgba(0,0,0,.6);
-    animation: fadeUp .4s ease;
-  }
-
-  @keyframes fadeUp {
-    from { opacity:0; transform: translateY(20px); }
-    to   { opacity:1; transform: translateY(0); }
-  }
-
-  .auth-header {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-    padding: 32px;
-    text-align: center;
-  }
-  .auth-header .icon {
-    font-size: 42px; display: block; margin-bottom: 10px;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,.3));
-  }
+  /* Auth UI */
+  .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 80px 20px 40px; position: relative; z-index: 1; }
+  .auth-box { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.6); animation: fadeUp .4s ease; }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  .auth-header { background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); padding: 32px; text-align: center; }
+  .auth-header .icon { font-size: 42px; display: block; margin-bottom: 10px; }
   .auth-header h1 { font-size: 22px; font-weight: 700; color: #fff; }
-  .auth-header p  { color: rgba(255,255,255,.8); font-size: 14px; margin-top: 4px; }
-
-  .auth-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-  }
-  .auth-tab {
-    flex: 1; padding: 14px;
-    text-align: center; font-size: 14px; font-weight: 600;
-    color: var(--muted); cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all .2s;
-  }
-  .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
+  .auth-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .auth-tab { flex: 1; padding: 14px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .auth-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
   .auth-body { padding: 28px 32px 32px; }
-
   .form-group { margin-bottom: 18px; }
-  .form-group label {
-    display: block; font-size: 13px; color: var(--muted);
-    margin-bottom: 6px; font-weight: 600;
-  }
-  .form-group input {
-    width: 100%; padding: 12px 16px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text); font-size: 15px; font-family: var(--sans);
-    outline: none; transition: border-color .2s;
-  }
+  .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .form-group input { width: 100%; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); outline: none; }
   .form-group input:focus { border-color: var(--accent); }
-
-  .btn-primary {
-    width: 100%; padding: 14px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none; border-radius: 10px;
-    color: #fff; font-size: 16px; font-weight: 700;
-    font-family: var(--sans);
-    cursor: pointer; transition: opacity .2s, transform .1s;
-  }
-  .btn-primary:hover { opacity: .9; }
-  .btn-primary:active { transform: scale(.98); }
-  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
-
-  .msg {
-    margin-top: 14px; padding: 12px 16px;
-    border-radius: 8px; font-size: 14px;
-    text-align: center; display: none;
-  }
-  .msg.error   { background: #ef44441a; border: 1px solid #ef444440; color: #f87171; display: block; }
+  .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .msg { margin-top: 14px; padding: 12px 16px; border-radius: 8px; font-size: 14px; text-align: center; display: none; }
+  .msg.error { background: #ef44441a; border: 1px solid #ef444440; color: #f87171; display: block; }
   .msg.success { background: #22c55e1a; border: 1px solid #22c55e40; color: #4ade80; display: block; }
 
-  .dash {
-    padding: 80px 24px 40px;
-    max-width: 1100px; margin: 0 auto;
-    position: relative; z-index: 1;
-  }
+  /* Dashboard UI */
+  .dash { padding: 80px 24px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+  .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .dash-tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 28px; }
+  .dash-tab { flex: 1; padding: 10px 16px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-radius: 8px; border: none; background: transparent; color: var(--muted); }
+  .dash-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .dash-panel { display: none; }
+  .dash-panel.active { display: block; }
 
-  .dash-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
-  }
-  .dash-header h2 { font-size: 24px; font-weight: 700; }
-  .dash-header h2 span { color: var(--accent); }
-
-  .toggle-wrap { display: flex; align-items: center; gap: 10px; }
-  .toggle-label { font-size: 14px; color: var(--muted); }
-
-  .toggle {
-    width: 48px; height: 26px;
-    background: var(--border); border-radius: 13px;
-    position: relative; cursor: pointer;
-    transition: background .3s;
-    border: none; outline: none;
-  }
-  .toggle.on { background: var(--success); }
-  .toggle::after {
-    content: '';
-    position: absolute; top: 3px; left: 3px;
-    width: 20px; height: 20px;
-    background: #fff; border-radius: 50%;
-    transition: left .3s;
-  }
-  .toggle.on::after { left: 25px; }
-
-  .section-title {
-    font-family: var(--mono);
-    font-size: 11px; font-weight: 700;
-    color: var(--accent); letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  .bus-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px; margin-bottom: 40px;
-  }
-
-  .bus-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px; padding: 20px;
-    transition: border-color .2s, transform .2s;
-    position: relative; overflow: hidden;
-  }
-  .bus-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-
-  .bus-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    opacity: 0; transition: opacity .2s;
-  }
-  .bus-card:hover::before { opacity: 1; }
-
-  .bus-card.stopped {
-    border-color: var(--accent2);
-    background: linear-gradient(135deg, #1a1025, var(--card));
-  }
-  .bus-card.stopped::before { opacity: 1; }
-
-  .bus-name {
-    font-family: var(--mono); font-size: 16px; font-weight: 700;
-    color: var(--text); margin-bottom: 4px;
-  }
-  .bus-route { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-
-  .bus-status {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 12px; border-radius: 20px;
-    font-size: 12px; font-weight: 600;
-    margin-bottom: 14px;
-  }
-  .bus-status.running { background: #22c55e15; color: var(--success); border: 1px solid #22c55e30; }
-  .bus-status.stopped { background: #ef444415; color: #f87171;      border: 1px solid #ef444430; }
-  .bus-status.unknown { background: #ffffff10; color: var(--muted);  border: 1px solid var(--border); }
-
-  .pulse { width:8px; height:8px; border-radius:50%; display:inline-block; }
-  .pulse.green { background: var(--success); animation: pulse-g 1.5s infinite; }
-  .pulse.red   { background: #ef4444;        animation: pulse-r 1s infinite; }
-  .pulse.gray  { background: var(--muted); }
-
-  @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:.4} }
-  @keyframes pulse-r { 0%,100%{opacity:1} 50%{opacity:.3} }
-
+  .bus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .bus-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; transition: all .2s; position: relative; }
+  .bus-card.stopped { border-color: var(--accent2); background: linear-gradient(135deg, #1a1025, var(--card)); }
+  .bus-name { font-family: var(--mono); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .bus-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 14px; }
+  .bus-status.running { background: #22c55e15; color: var(--success); }
+  .bus-status.stopped { background: #ef444415; color: #f87171; }
   .bus-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .meta-item .k { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
-  .meta-item .v { font-size: 13px; font-family: var(--mono); color: var(--text); }
+  .meta-item .k { font-size: 11px; color: var(--muted); }
+  .meta-item .v { font-size: 13px; font-family: var(--mono); }
 
-  .notif-list { display: flex; flex-direction: column; gap: 10px; }
-
-  .notif-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px 20px;
-    display: flex; align-items: center; gap: 16px;
-    animation: fadeUp .3s ease;
-  }
-
-  .notif-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent)22, var(--accent2)22);
-    border: 1px solid var(--accent)33;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-  }
-
-  .notif-info { flex: 1; }
-  .notif-info .bus { font-weight: 700; font-size: 15px; }
-  .notif-info .detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .notif-time {
-    font-family: var(--mono); font-size: 11px; color: var(--muted);
-    text-align: right; flex-shrink: 0;
-  }
-
-  .empty-state {
-    text-align: center; padding: 48px 20px;
-    color: var(--muted); font-size: 14px;
-  }
-  .empty-state .icon { font-size: 40px; display:block; margin-bottom: 12px; opacity: .5; }
-
-  .btn-logout {
-    padding: 6px 16px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--muted); font-size: 13px;
-    font-family: var(--sans);
-    cursor: pointer; transition: all .2s;
-  }
-  .btn-logout:hover { border-color: var(--accent2); color: #f87171; }
-
-  .btn-refresh {
-    padding: 8px 18px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); font-size: 13px;
-    font-family: var(--sans); cursor: pointer; transition: all .2s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
-
+  #busMap { width: 100%; height: 500px; border-radius: 16px; border: 1px solid var(--border); }
+  .notif-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+  
+  .toggle { width: 48px; height: 26px; background: var(--border); border-radius: 13px; position: relative; cursor: pointer; border: none; }
+  .toggle.on { background: var(--success); }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: .3s; }
+  .toggle.on::after { left: 25px; }
   .spin { animation: spin .8s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 600px) {
-    .auth-body { padding: 20px; }
-    .dash { padding: 72px 16px 40px; }
-    .dash-header h2 { font-size: 20px; }
-  }
 </style>
 </head>
 <body>
@@ -324,50 +97,31 @@
   <div class="logo">🚌 <span>Bus</span>Alert</div>
   <div class="topbar-right" id="topbarRight" style="display:none">
     <div class="chip">สวัสดี <b id="topName"></b></div>
-    <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+    <button onclick="logout()" style="background:none; border:1px solid var(--border); color:var(--muted); padding:5px 15px; border-radius:20px; cursor:pointer;">ออกจากระบบ</button>
   </div>
 </div>
 
 <div class="page active" id="pageAuth">
   <div class="auth-wrap">
     <div class="auth-box">
-      <div class="auth-header">
-        <span class="icon">🚌</span>
-        <h1>Bus Alert</h1>
-        <p>ระบบแจ้งเตือนรถเมล์จอด ผ่านอีเมล</p>
-      </div>
+      <div class="auth-header"><h1>Bus Alert</h1><p>ระบบแจ้งเตือนรถเมล์</p></div>
       <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchTab('login')">เข้าสู่ระบบ</div>
-        <div class="auth-tab" onclick="switchTab('register')">สมัครสมาชิก</div>
+        <div class="auth-tab active" id="tabLogin" onclick="switchTab('login')">เข้าสู่ระบบ</div>
+        <div class="auth-tab" id="tabReg" onclick="switchTab('register')">สมัครสมาชิก</div>
       </div>
       <div class="auth-body">
         <div id="formLogin">
-          <div class="form-group">
-            <label>อีเมล</label>
-            <input type="email" id="loginEmail" placeholder="your@email.com">
-          </div>
-          <div class="form-group">
-            <label>รหัสผ่าน</label>
-            <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-          </div>
-          <button class="btn-primary" onclick="doLogin()" id="btnLogin">เข้าสู่ระบบ</button>
+          <div class="form-group"><label>อีเมล</label><input type="email" id="loginEmail"></div>
+          <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="loginPass"></div>
+          <button class="btn-primary" onclick="doLogin()">เข้าสู่ระบบ</button>
           <div class="msg" id="loginMsg"></div>
         </div>
         <div id="formRegister" style="display:none">
-          <div class="form-group">
-            <label>ชื่อ-นามสกุล</label>
-            <input type="text" id="regName" placeholder="กรอกชื่อของคุณ">
-          </div>
-          <div class="form-group">
-            <label>อีเมล</label>
-            <input type="email" id="regEmail" placeholder="your@email.com">
-          </div>
-          <div class="form-group">
-            <label>รหัสผ่าน</label>
-            <input type="password" id="regPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()">
-          </div>
-          <button class="btn-primary" onclick="doRegister()" id="btnRegister">สมัครสมาชิก</button>
-          <div class="msg" id="registerMsg"></div>
+          <div class="form-group"><label>ชื่อ</label><input type="text" id="regName"></div>
+          <div class="form-group"><label>อีเมล</label><input type="email" id="regEmail"></div>
+          <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="regPass"></div>
+          <button class="btn-primary" onclick="doRegister()">สมัครสมาชิก</button>
+          <div class="msg" id="regMsg"></div>
         </div>
       </div>
     </div>
@@ -377,184 +131,114 @@
 <div class="page" id="pageDash">
   <div class="dash">
     <div class="dash-header">
-      <h2>สถานะรถเมล์ <span>สดๆ</span></h2>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div class="toggle-wrap">
-          <span class="toggle-label">รับแจ้งเตือน</span>
-          <button class="toggle" id="toggleNotif" onclick="toggleNotification()"></button>
-        </div>
-        <button class="btn-refresh" onclick="loadBuses()" id="refreshBtn">⟳ รีเฟรช</button>
+      <h2>สถานะรถเมล์</h2>
+      <div style="display:flex; gap:15px; align-items:center;">
+        <span style="font-size:12px; color:var(--muted);">รับแจ้งเตือน</span>
+        <button class="toggle" id="toggleNotif" onclick="toggleNotification()"></button>
+        <button onclick="loadBuses()" style="background:var(--card); border:1px solid var(--border); color:#fff; padding:8px 15px; border-radius:8px; cursor:pointer;">⟳ รีเฟรช</button>
       </div>
     </div>
-    <div class="section-title">รถทั้งหมด</div>
-    <div class="bus-grid" id="busGrid"></div>
-    <div class="section-title">ประวัติการแจ้งเตือน</div>
-    <div class="notif-list" id="notifList"></div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" id="btnOver" onclick="switchDashTab('overview')">📋 รายการ</button>
+      <button class="dash-tab" id="btnMap" onclick="switchDashTab('map')">🗺️ แผนที่</button>
+      <button class="dash-tab" id="btnNotif" onclick="switchDashTab('notifs')">🔔 แจ้งเตือน</button>
+    </div>
+
+    <div class="dash-panel active" id="panelOverview"><div class="bus-grid" id="busGrid"></div></div>
+    <div class="dash-panel" id="panelMap"><div id="busMap"></div></div>
+    <div class="dash-panel" id="panelNotifs"><div id="notifList"></div></div>
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ⚠️ แก้ไข Port เป็น 5001 เพื่อเชื่อมต่อกับ Backend
 const API = 'http://localhost:5001/api'
-let currentUser  = null
-let currentToken = null
-let notifActive  = true
-let refreshTimer = null
+let currentUser = null, currentToken = null, busMap = null, busMarkers = {}, refreshTimer = null
 
-function saveSession(token, user) {
-  currentToken = token; currentUser = user
-  localStorage.setItem('bus_token', token)
-  localStorage.setItem('bus_user',  JSON.stringify(user))
+function switchTab(t){
+  document.getElementById('formLogin').style.display = t==='login'?'block':'none';
+  document.getElementById('formRegister').style.display = t==='reg'?'none':'block';
+  document.getElementById('tabLogin').classList.toggle('active', t==='login');
+  document.getElementById('tabReg').classList.toggle('active', t==='register');
 }
 
-function loadSession() {
-  const t = localStorage.getItem('bus_token'), u = localStorage.getItem('bus_user')
-  if (t && u) { currentToken = t; currentUser = JSON.parse(u); return true }
-  return false
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value, password = document.getElementById('loginPass').value;
+  const res = await fetch(`${API}/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password})});
+  const data = await res.json();
+  if(res.ok){ currentUser=data.user; currentToken=data.token; localStorage.setItem('bus_token', data.token); localStorage.setItem('bus_user', JSON.stringify(data.user)); showDash(); }
+  else { document.getElementById('loginMsg').textContent = data.error; document.getElementById('loginMsg').style.display='block'; }
 }
 
-function clearSession() {
-  currentToken = null; currentUser = null
-  localStorage.removeItem('bus_token'); localStorage.removeItem('bus_user')
+async function doRegister(){
+  const name=document.getElementById('regName').value, email=document.getElementById('regEmail').value, password=document.getElementById('regPass').value;
+  const res = await fetch(`${API}/register`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, email, password})});
+  if(res.ok){ alert('สมัครสำเร็จ'); switchTab('login'); }
 }
 
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
-  document.getElementById(id).classList.add('active')
+function showDash(){
+  document.getElementById('pageAuth').style.display='none'; document.getElementById('pageDash').style.display='block';
+  document.getElementById('topbarRight').style.display='flex'; document.getElementById('topName').textContent = currentUser.name;
+  document.getElementById('toggleNotif').classList.toggle('on', currentUser.active);
+  loadBuses(); loadNotifications();
+  refreshTimer = setInterval(()=>{ loadBuses(); if(busMap) updateMapBuses(); }, 10000);
 }
 
-function showDash() {
-  document.getElementById('topbarRight').style.display = 'flex'
-  document.getElementById('topName').textContent = currentUser.name
-  notifActive = currentUser.active !== false
-  updateToggleUI()
-  showPage('pageDash')
-  loadBuses(); loadNotifications()
-  clearInterval(refreshTimer)
-  refreshTimer = setInterval(() => { loadBuses(); loadNotifications() }, 20000)
+function switchDashTab(tab){
+  document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('btn'+tab.charAt(0).toUpperCase()+tab.slice(1,4)).classList.add('active');
+  if(tab==='map') initMap();
 }
 
-function switchTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login') ? i===0 : i===1))
-  document.getElementById('formLogin').style.display = tab==='login' ? '' : 'none'
-  document.getElementById('formRegister').style.display = tab==='register' ? '' : 'none'
+function initMap(){
+  if(busMap) return;
+  busMap = L.map('busMap').setView([14.882, 102.021], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(busMap);
+  updateMapBuses();
 }
 
-async function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim(), pass = document.getElementById('loginPass').value.trim()
-  const msgEl = document.getElementById('loginMsg'), btn = document.getElementById('btnLogin')
-  if (!email || !pass) { showMsg(msgEl,'error','กรุณากรอกข้อมูลให้ครบ'); return }
-  btn.disabled = true; btn.textContent = 'กำลังเข้าสู่ระบบ...'
-  try {
-    const res = await fetch(`${API}/login`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({email, password: pass})
-    })
-    const data = await res.json()
-    if (!res.ok) { showMsg(msgEl,'error', data.error); return }
-    saveSession(data.token, data.user); showDash()
-  } catch(e) { showMsg(msgEl,'error','ไม่สามารถเชื่อมต่อ server ได้') }
-  finally { btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ' }
+async function updateMapBuses(){
+  const res = await fetch(`${API}/buses`);
+  const buses = await res.json();
+  buses.forEach(b => {
+    if(!b.lat || !b.lon) return;
+    const pos = [b.lat, b.lon];
+    if(busMarkers[b.id]) busMarkers[b.id].setLatLng(pos);
+    else busMarkers[b.id] = L.marker(pos).addTo(busMap).bindPopup(b.name);
+  });
 }
 
-async function doRegister() {
-  const name = document.getElementById('regName').value.trim(), email = document.getElementById('regEmail').value.trim(), pass = document.getElementById('regPass').value.trim()
-  const msgEl = document.getElementById('registerMsg'), btn = document.getElementById('btnRegister')
-  if (!name || !email || !pass) { showMsg(msgEl,'error','กรุณากรอกข้อมูลให้ครบ'); return }
-  btn.disabled = true; btn.textContent = 'กำลังสมัคร...'
-  try {
-    const res = await fetch(`${API}/register`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({name, email, password: pass})
-    })
-    const data = await res.json()
-    if (!res.ok) { showMsg(msgEl,'error', data.error); return }
-    showMsg(msgEl,'success','✅ สมัครสำเร็จ! กรุณาเข้าสู่ระบบ'); setTimeout(() => switchTab('login'), 1500)
-  } catch(e) { showMsg(msgEl,'error','ไม่สามารถเชื่อมต่อ server ได้') }
-  finally { btn.disabled = false; btn.textContent = 'สมัครสมาชิก' }
-}
-
-async function logout() {
-  clearInterval(refreshTimer)
-  await fetch(`${API}/logout`, { method:'POST', headers:{'Authorization':'Bearer '+currentToken} }).catch(()=>{})
-  clearSession(); document.getElementById('topbarRight').style.display = 'none'; showPage('pageAuth')
-}
-
-async function toggleNotification() {
-  notifActive = !notifActive; updateToggleUI()
-  await fetch(`${API}/subscribe`, {
-    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentToken},
-    body: JSON.stringify({active: notifActive})
-  }).catch(()=>{})
-}
-
-function updateToggleUI() { document.getElementById('toggleNotif').classList.toggle('on', notifActive) }
-
-async function loadBuses() {
-  const btn = document.getElementById('refreshBtn'); btn.innerHTML = '<span class="spin">⟳</span> กำลังโหลด...'
-  try {
-    const res = await fetch(`${API}/buses`), data = await res.json()
-    renderBuses(data)
-  } catch(e) { document.getElementById('busGrid').innerHTML = '<div class="empty-state">⚠️ โหลดข้อมูลล้มเหลว</div>' }
-  finally { btn.innerHTML = '⟳ รีเฟรช' }
-}
-
-function renderBuses(buses) {
-  const grid = document.getElementById('busGrid')
-  if (!buses.length) { grid.innerHTML = '<div class="empty-state">🚌 ไม่มีข้อมูลรถ</div>'; return }
-  grid.innerHTML = buses.map(b => {
-    const st = (b.status || '').toLowerCase()
-    const stopped = st.includes('stop') || st.includes('idle') || st.includes('จอด')
-    const moving = !stopped && b.speed && parseFloat(b.speed) > 0
-    // ⚠️ แก้ไขเครื่องหมาย ${ } ใน URL ของ Google Maps
-    const mapsLink = b.lat && b.lon ? `https://www.google.com/maps?q=${b.lat},${b.lon}` : null
-    return `
-    <div class="bus-card ${stopped ? 'stopped' : ''}">
-      <div class="bus-name">${b.name || b.id.slice(0,8)}</div>
-      <div class="bus-route">สาย ${b.route || '-'}</div>
-      <div class="bus-status ${stopped ? 'stopped' : moving ? 'running' : 'unknown'}">
-        <span class="pulse ${stopped ? 'red' : moving ? 'green' : 'gray'}"></span> ${stopped ? '🛑 จอด' : moving ? '🚌 วิ่งอยู่' : '—'}
-      </div>
+async function loadBuses(){
+  const res = await fetch(`${API}/buses`);
+  const buses = await res.json();
+  const grid = document.getElementById('busGrid');
+  grid.innerHTML = buses.map(b => `
+    <div class="bus-card ${b.status?.toLowerCase().includes('stop')?'stopped':''}">
+      <div class="bus-name">${b.name}</div>
+      <div class="bus-status ${b.status?.toLowerCase().includes('stop')?'stopped':'running'}">${b.status}</div>
       <div class="bus-meta">
-        <div class="meta-item"><div class="k">LAT</div><div class="v">${parseFloat(b.lat).toFixed(4)}</div></div>
-        <div class="meta-item"><div class="k">LON</div><div class="v">${parseFloat(b.lon).toFixed(4)}</div></div>
+        <div class="meta-item"><div class="k">SPEED</div><div class="v">${b.speed}</div></div>
+        <div class="meta-item"><div class="k">SEATS</div><div class="v">${b.seats}</div></div>
       </div>
-      ${mapsLink ? `<a href="${mapsLink}" target="_blank" style="display:block;text-align:center;margin-top:10px;color:var(--accent);text-decoration:none;font-size:12px">📍 ดูใน Maps</a>` : ''}
-    </div>`
-  }).join('')
+      <a href="https://www.google.com/maps?q=$${b.lat},${b.lon}" target="_blank" style="display:block; text-align:center; margin-top:10px; color:var(--accent); text-decoration:none; font-size:12px;">📍 Google Maps</a>
+    </div>
+  `).join('');
 }
 
-async function loadNotifications() {
-  try {
-    const res = await fetch(`${API}/notifications`, { headers:{'Authorization':'Bearer '+currentToken} })
-    if (res.ok) renderNotifications(await res.json())
-  } catch(e) {}
+async function loadNotifications(){
+  const res = await fetch(`${API}/notifications`, {headers:{'Authorization':'Bearer '+currentToken}});
+  const data = await res.json();
+  document.getElementById('notifList').innerHTML = data.map(n => `<div class="notif-item"><b>${n.bus_name}</b> จอดแล้วเมื่อ ${n.sent_at}</div>`).join('');
 }
 
-function renderNotifications(list) {
-  const el = document.getElementById('notifList')
-  if (!list.length) { el.innerHTML = '<div class="empty-state">🔔 ยังไม่มีการแจ้งเตือน</div>'; return }
-  el.innerHTML = list.map(n => `
-    <div class="notif-item">
-      <div class="notif-icon">🚌</div>
-      <div class="notif-info">
-        <div class="bus">${n.bus_name} สาย ${n.route}</div>
-        <div class="detail">จอดแล้วเมื่อ ${n.sent_at}</div>
-      </div>
-    </div>`).join('')
-}
+function logout(){ localStorage.clear(); location.reload(); }
 
-function showMsg(el, type, text) { el.className = `msg ${type}`; el.style.display = 'block'; el.textContent = text }
-
-window.onload = async () => {
-  if (loadSession()) {
-    try {
-      const res = await fetch(`${API}/me`, { headers:{'Authorization':'Bearer '+currentToken} })
-      if (res.ok) { currentUser = await res.json(); showDash(); return }
-    } catch(e) {}
-    clearSession()
-  }
-  showPage('pageAuth')
+window.onload = () => {
+  const t = localStorage.getItem('bus_token'), u = localStorage.getItem('bus_user');
+  if(t && u){ currentToken=t; currentUser=JSON.parse(u); showDash(); }
 }
 </script>
 </body>
