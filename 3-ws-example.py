@@ -350,4 +350,3 @@ if __name__ == "__main__":
     watcher = threading.Thread(target=token_refresh_watcher, daemon=True)
     watcher.start()
     run_forever()
-    

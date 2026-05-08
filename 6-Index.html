@@ -30,6 +30,7 @@
     background-size: 40px 40px; pointer-events: none; z-index: 0;
   }
 
+  /* Navigation & UI Components */
   .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(11,18,32,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
   .logo { font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
   .logo span { color: var(--text); }
@@ -44,11 +45,9 @@
   .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 80px 20px 40px; position: relative; z-index: 1; }
   .auth-box { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.6); animation: fadeUp .4s ease; }
   @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
-  .auth-header { background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); padding: 32px; text-align: center; }
-  .auth-header .icon { font-size: 42px; display: block; margin-bottom: 10px; }
-  .auth-header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+  .auth-header { background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); padding: 32px; text-align: center; color: #fff; }
   .auth-tabs { display: flex; border-bottom: 1px solid var(--border); }
-  .auth-tab { flex: 1; padding: 14px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .auth-tab { flex: 1; padding: 14px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; }
   .auth-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
   .auth-body { padding: 28px 32px 32px; }
   .form-group { margin-bottom: 18px; }
@@ -56,39 +55,31 @@
   .form-group input { width: 100%; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); outline: none; }
   .form-group input:focus { border-color: var(--accent); }
   .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
-  .msg { margin-top: 14px; padding: 12px 16px; border-radius: 8px; font-size: 14px; text-align: center; display: none; }
-  .msg.error { background: #ef44441a; border: 1px solid #ef444440; color: #f87171; display: block; }
-  .msg.success { background: #22c55e1a; border: 1px solid #22c55e40; color: #4ade80; display: block; }
 
-  /* Dashboard UI */
+  /* Dash UI */
   .dash { padding: 80px 24px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
   .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
   .dash-tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 28px; }
-  .dash-tab { flex: 1; padding: 10px 16px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-radius: 8px; border: none; background: transparent; color: var(--muted); }
+  .dash-tab { flex: 1; padding: 10px 16px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-radius: 8px; border: none; background: transparent; }
   .dash-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
   .dash-panel { display: none; }
   .dash-panel.active { display: block; }
 
-  .bus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
-  .bus-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; transition: all .2s; position: relative; }
+  .bus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .bus-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
   .bus-card.stopped { border-color: var(--accent2); background: linear-gradient(135deg, #1a1025, var(--card)); }
-  .bus-name { font-family: var(--mono); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-  .bus-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 14px; }
+  .bus-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 12px; }
   .bus-status.running { background: #22c55e15; color: var(--success); }
   .bus-status.stopped { background: #ef444415; color: #f87171; }
-  .bus-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .meta-item .k { font-size: 11px; color: var(--muted); }
-  .meta-item .v { font-size: 13px; font-family: var(--mono); }
-
-  #busMap { width: 100%; height: 500px; border-radius: 16px; border: 1px solid var(--border); }
-  .notif-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
   
-  .toggle { width: 48px; height: 26px; background: var(--border); border-radius: 13px; position: relative; cursor: pointer; border: none; }
+  #busMap { width: 100%; height: 500px; border-radius: 16px; border: 1px solid var(--border); }
+  .notif-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 10px; border-left: 4px solid var(--accent); }
+
+  /* Toggle Button */
+  .toggle { width: 48px; height: 26px; background: var(--border); border-radius: 13px; position: relative; cursor: pointer; border: none; transition: 0.3s; }
   .toggle.on { background: var(--success); }
-  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: .3s; }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.3s; }
   .toggle.on::after { left: 25px; }
-  .spin { animation: spin .8s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -114,14 +105,14 @@
           <div class="form-group"><label>อีเมล</label><input type="email" id="loginEmail"></div>
           <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="loginPass"></div>
           <button class="btn-primary" onclick="doLogin()">เข้าสู่ระบบ</button>
-          <div class="msg" id="loginMsg"></div>
+          <div id="loginMsg" class="msg" style="margin-top:10px; font-size:13px; color:#f87171; display:none;"></div>
         </div>
         <div id="formRegister" style="display:none">
           <div class="form-group"><label>ชื่อ</label><input type="text" id="regName"></div>
           <div class="form-group"><label>อีเมล</label><input type="email" id="regEmail"></div>
           <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="regPass"></div>
           <button class="btn-primary" onclick="doRegister()">สมัครสมาชิก</button>
-          <div class="msg" id="regMsg"></div>
+          <div id="regMsg" class="msg" style="margin-top:10px; font-size:13px; color:#4ade80; display:none;"></div>
         </div>
       </div>
     </div>
@@ -133,7 +124,7 @@
     <div class="dash-header">
       <h2>สถานะรถเมล์</h2>
       <div style="display:flex; gap:15px; align-items:center;">
-        <span style="font-size:12px; color:var(--muted);">รับแจ้งเตือน</span>
+        <span style="font-size:12px; color:var(--muted);">รับแจ้งเตือนเมล</span>
         <button class="toggle" id="toggleNotif" onclick="toggleNotification()"></button>
         <button onclick="loadBuses()" style="background:var(--card); border:1px solid var(--border); color:#fff; padding:8px 15px; border-radius:8px; cursor:pointer;">⟳ รีเฟรช</button>
       </div>
@@ -142,7 +133,7 @@
     <div class="dash-tabs">
       <button class="dash-tab active" id="btnOver" onclick="switchDashTab('overview')">📋 รายการ</button>
       <button class="dash-tab" id="btnMap" onclick="switchDashTab('map')">🗺️ แผนที่</button>
-      <button class="dash-tab" id="btnNotif" onclick="switchDashTab('notifs')">🔔 แจ้งเตือน</button>
+      <button class="dash-tab" id="btnNotif" onclick="switchDashTab('notifs')">🔔 ประวัติ</button>
     </div>
 
     <div class="dash-panel active" id="panelOverview"><div class="bus-grid" id="busGrid"></div></div>
@@ -153,44 +144,96 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const API = 'http://localhost:5001/api'
-let currentUser = null, currentToken = null, busMap = null, busMarkers = {}, refreshTimer = null
+const API = 'http://localhost:5001/api';
+let currentUser = null, currentToken = null, busMap = null, busMarkers = {}, refreshTimer = null;
 
+// --- AUTH LOGIC ---
 function switchTab(t){
   document.getElementById('formLogin').style.display = t==='login'?'block':'none';
-  document.getElementById('formRegister').style.display = t==='reg'?'none':'block';
+  document.getElementById('formRegister').style.display = t==='login'?'none':'block';
   document.getElementById('tabLogin').classList.toggle('active', t==='login');
   document.getElementById('tabReg').classList.toggle('active', t==='register');
 }
 
 async function doLogin(){
   const email = document.getElementById('loginEmail').value, password = document.getElementById('loginPass').value;
-  const res = await fetch(`${API}/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password})});
-  const data = await res.json();
-  if(res.ok){ currentUser=data.user; currentToken=data.token; localStorage.setItem('bus_token', data.token); localStorage.setItem('bus_user', JSON.stringify(data.user)); showDash(); }
-  else { document.getElementById('loginMsg').textContent = data.error; document.getElementById('loginMsg').style.display='block'; }
+  try {
+    const res = await fetch(`${API}/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password})});
+    const data = await res.json();
+    if(res.ok){ 
+      currentUser=data.user; currentToken=data.token; 
+      localStorage.setItem('bus_token', data.token); 
+      localStorage.setItem('bus_user', JSON.stringify(data.user)); 
+      showDash(); 
+    } else { 
+      const msg = document.getElementById('loginMsg'); msg.textContent = data.error; msg.style.display='block';
+    }
+  } catch (e) { console.error(e); }
 }
 
 async function doRegister(){
   const name=document.getElementById('regName').value, email=document.getElementById('regEmail').value, password=document.getElementById('regPass').value;
-  const res = await fetch(`${API}/register`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, email, password})});
-  if(res.ok){ alert('สมัครสำเร็จ'); switchTab('login'); }
+  try {
+    const res = await fetch(`${API}/register`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, email, password})});
+    const data = await res.json();
+    const msg = document.getElementById('regMsg');
+    if(res.ok){ 
+      msg.textContent = 'สำเร็จ! กรุณาเข้าสู่ระบบ'; msg.style.display='block';
+      setTimeout(() => switchTab('login'), 1500);
+    } else {
+      msg.textContent = data.error; msg.style.display='block'; msg.style.color='#f87171';
+    }
+  } catch (e) { console.error(e); }
 }
 
+// --- DASHBOARD LOGIC ---
 function showDash(){
-  document.getElementById('pageAuth').style.display='none'; document.getElementById('pageDash').style.display='block';
-  document.getElementById('topbarRight').style.display='flex'; document.getElementById('topName').textContent = currentUser.name;
-  document.getElementById('toggleNotif').classList.toggle('on', currentUser.active);
+  document.getElementById('pageAuth').classList.remove('active');
+  document.getElementById('pageDash').classList.add('active');
+  document.getElementById('topbarRight').style.display='flex'; 
+  document.getElementById('topName').textContent = currentUser.name;
+
+  // ตั้งค่าสถานะปุ่มตามข้อมูล User (1=เปิด, 0=ปิด)
+  const isNotifOn = (currentUser.active === 1 || currentUser.active === true);
+  document.getElementById('toggleNotif').classList.toggle('on', isNotifOn);
+
   loadBuses(); loadNotifications();
-  refreshTimer = setInterval(()=>{ loadBuses(); if(busMap) updateMapBuses(); }, 10000);
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => { loadBuses(); if(busMap) updateMapBuses(); loadNotifications(); }, 10000);
+}
+
+// ฟังก์ชันแก้ปัญหา กดปิดไม่ได้/ค้าง
+async function toggleNotification() {
+  const btn = document.getElementById('toggleNotif');
+  const isCurrentlyOn = btn.classList.contains('on');
+  const newVal = isCurrentlyOn ? 0 : 1; // สลับค่า 1 -> 0 หรือ 0 -> 1
+
+  try {
+    const res = await fetch(`${API}/user/update-notif`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+      body: JSON.stringify({ active: newVal })
+    });
+
+    if (res.ok) {
+      // อัปเดต UI หลังจากเซิร์ฟเวอร์ตอบกลับสำเร็จ
+      if (newVal === 1) btn.classList.add('on'); else btn.classList.remove('on');
+      
+      currentUser.active = newVal;
+      localStorage.setItem('bus_user', JSON.stringify(currentUser));
+    } else {
+      alert('ไม่สามารถอัปเดตสถานะได้');
+    }
+  } catch (err) { console.error(err); }
 }
 
 function switchDashTab(tab){
   document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
   document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('btn'+tab.charAt(0).toUpperCase()+tab.slice(1,4)).classList.add('active');
-  if(tab==='map') initMap();
+  const idMap = {'overview': 'btnOver', 'map': 'btnMap', 'notifs': 'btnNotif'};
+  document.getElementById(idMap[tab]).classList.add('active');
+  if(tab==='map') { setTimeout(() => { initMap(); if(busMap) busMap.invalidateSize(); }, 200); }
 }
 
 function initMap(){
@@ -201,44 +244,54 @@ function initMap(){
 }
 
 async function updateMapBuses(){
-  const res = await fetch(`${API}/buses`);
-  const buses = await res.json();
-  buses.forEach(b => {
-    if(!b.lat || !b.lon) return;
-    const pos = [b.lat, b.lon];
-    if(busMarkers[b.id]) busMarkers[b.id].setLatLng(pos);
-    else busMarkers[b.id] = L.marker(pos).addTo(busMap).bindPopup(b.name);
-  });
+  try {
+    const res = await fetch(`${API}/buses`);
+    const buses = await res.json();
+    buses.forEach(b => {
+      if(!b.lat || b.lat === '-') return;
+      const pos = [parseFloat(b.lat), parseFloat(b.lon)];
+      if(busMarkers[b.id]) busMarkers[b.id].setLatLng(pos);
+      else busMarkers[b.id] = L.marker(pos).addTo(busMap).bindPopup(`<b>${b.name}</b>`);
+    });
+  } catch (e) { console.error(e); }
 }
 
 async function loadBuses(){
-  const res = await fetch(`${API}/buses`);
-  const buses = await res.json();
-  const grid = document.getElementById('busGrid');
-  grid.innerHTML = buses.map(b => `
-    <div class="bus-card ${b.status?.toLowerCase().includes('stop')?'stopped':''}">
-      <div class="bus-name">${b.name}</div>
-      <div class="bus-status ${b.status?.toLowerCase().includes('stop')?'stopped':'running'}">${b.status}</div>
-      <div class="bus-meta">
-        <div class="meta-item"><div class="k">SPEED</div><div class="v">${b.speed}</div></div>
-        <div class="meta-item"><div class="k">SEATS</div><div class="v">${b.seats}</div></div>
-      </div>
-      <a href="https://www.google.com/maps?q=$${b.lat},${b.lon}" target="_blank" style="display:block; text-align:center; margin-top:10px; color:var(--accent); text-decoration:none; font-size:12px;">📍 Google Maps</a>
-    </div>
-  `).join('');
+  try {
+    const res = await fetch(`${API}/buses`);
+    const buses = await res.json();
+    document.getElementById('busGrid').innerHTML = buses.map(b => {
+      const isStop = b.status?.toLowerCase().includes('stop') || parseFloat(b.speed) === 0;
+      return `
+        <div class="bus-card ${isStop ? 'stopped' : ''}">
+          <div class="bus-name" style="font-weight:700; margin-bottom:5px;">${b.name}</div>
+          <div class="bus-status ${isStop ? 'stopped' : 'running'}">${isStop ? '🔴 จอด' : '🟢 วิ่งอยู่'}</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; font-size:12px; color:var(--muted);">
+            <div>SPEED: <span style="color:var(--text);">${b.speed}</span></div>
+            <div>SEATS: <span style="color:var(--text);">${b.seats}</span></div>
+          </div>
+          <a href="https://www.google.com/maps?q=${b.lat},${b.lon}" target="_blank" style="display:block; text-align:center; margin-top:12px; color:var(--accent); text-decoration:none; font-size:11px; font-weight:600;">📍 ดูแผนที่ Google</a>
+        </div>
+      `;
+    }).join('');
+  } catch (e) { console.error(e); }
 }
 
 async function loadNotifications(){
-  const res = await fetch(`${API}/notifications`, {headers:{'Authorization':'Bearer '+currentToken}});
-  const data = await res.json();
-  document.getElementById('notifList').innerHTML = data.map(n => `<div class="notif-item"><b>${n.bus_name}</b> จอดแล้วเมื่อ ${n.sent_at}</div>`).join('');
+  try {
+    const res = await fetch(`${API}/notifications`, { headers:{'Authorization':'Bearer '+currentToken} });
+    const data = await res.json();
+    const list = document.getElementById('notifList');
+    if (!data.length) { list.innerHTML = '<p style="text-align:center; color:var(--muted); padding:20px;">ไม่มีประวัติการแจ้งเตือน</p>'; return; }
+    list.innerHTML = data.map(n => `<div class="notif-item"><b>${n.bus_name}</b>: ${n.message} <br><small style="color:var(--muted);">${n.sent_at}</small></div>`).reverse().join('');
+  } catch (e) { console.error(e); }
 }
 
-function logout(){ localStorage.clear(); location.reload(); }
+function logout(){ if(refreshTimer) clearInterval(refreshTimer); localStorage.clear(); location.reload(); }
 
 window.onload = () => {
   const t = localStorage.getItem('bus_token'), u = localStorage.getItem('bus_user');
-  if(t && u){ currentToken=t; currentUser=JSON.parse(u); showDash(); }
+  if(t && u){ try { currentToken=t; currentUser=JSON.parse(u); showDash(); } catch(e) { localStorage.clear(); } }
 }
 </script>
 </body>
