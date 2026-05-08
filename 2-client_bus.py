@@ -1,40 +1,51 @@
 import socket
 import json
 import time
+import os
 
-SERVER_IP = "127.0.0.1"
-SERVER_PORT = 9000
+SERVER_IP, SERVER_PORT = "127.0.0.1", 9000
+BUFFER_SIZE = 65536
+BUS_LIST = [f"SUT NEW BUS {i}" for i in [1, 10, 11, 12, 2, 3, 4, 5, 6, 7, 8, 9]]
+
+def get_v(d, section, key):
+    return d.get(section, {}).get(key, {}).get("value", "-")
 
 def run_client():
+    print("\nSelect Bus: 1-12 or 0 (Track All)")
+    choice = input("Choice: ")
+    target_bus = BUS_LIST[int(choice) - 1] if choice.isdigit() and int(choice) > 0 else "ALL"
+
     try:
-        # 1. สร้าง Socket และเชื่อมต่อ
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((SERVER_IP, SERVER_PORT))
-            print(f"Connected to Bus Server at {SERVER_IP}:{SERVER_PORT}")
-            
             while True:
-                # 2. ส่งคำสั่งให้ Server
                 s.sendall(b"LIST\n")
+                raw = b""
+                while True:
+                    part = s.recv(BUFFER_SIZE)
+                    raw += part
+                    if len(part) < BUFFER_SIZE: break
                 
-                # 3. รับข้อมูล (Buffer ขนาดใหญ่สำหรับ JSON)
-                data = s.recv(4096).decode()
-                if not data: break
-                
-                # 4. แปลงข้อมูลและแสดงผล
-                bus_data = json.loads(data)
-                print(f"\n--- Bus Update at {time.strftime('%H:%M:%S')} ---")
-                for eid, values in bus_data.items():
-                    # ดึงค่าละติจูดจากโครงสร้าง ThingsBoard
-                    lat = values.get("TIME_SERIES", {}).get("latitude", {}).get("value", "-")
-                    print(f"Bus ID: {eid[:8]}... | Latitude: {lat}")
-                
-                # หน่วงเวลา 5 วินาทีก่อนขอข้อมูลใหม่
-                time.sleep(5)
+                try: bus_data = json.loads(raw.decode())
+                except: continue
 
-    except ConnectionRefusedError:
-        print("Cannot connect to server. Is it running?")
-    except KeyboardInterrupt:
-        print("\nClient stopped.")
+                os.system("cls" if os.name == "nt" else "clear")
+                print(f"--- 🚌 Tracking: {target_bus} | {time.strftime('%H:%M:%S')} ---")
+                print(f"{'NAME':20} {'LAT':12} {'LON':12} {'SPEED':8} {'STATUS'}")
+                print("-" * 75)
+
+                for eid, values in bus_data.items():
+                    name = get_v(values, "ENTITY_FIELD", "name")
+                    if target_bus == "ALL" or target_bus == name:
+                        lat = get_v(values, "TIME_SERIES", "latitude")
+                        lon = get_v(values, "TIME_SERIES", "longitude")
+                        speed = get_v(values, "TIME_SERIES", "speed")
+                        status = get_v(values, "TIME_SERIES", "status")
+                        print(f"{name:20} {str(lat)[:10]:12} {str(lon)[:10]:12} {str(speed):8} {status}")
+                
+                print("-" * 75)
+                time.sleep(2)
+    except Exception as e: print(f"Error: {e}")
 
 if __name__ == "__main__":
     run_client()
