@@ -7,7 +7,6 @@ import os
 import googlemaps
 import base64
 from datetime import datetime
-# --- 1. เพิ่มไว้ด้านบนสุดของไฟล์ ---
 from geopy.geocoders import Nominatim
 from geopy.exc import GeopyError
 
