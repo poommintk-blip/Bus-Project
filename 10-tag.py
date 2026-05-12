@@ -14,50 +14,79 @@ BASE_URL = "http://203.158.3.33:8080"
 WS_URL = "ws://203.158.3.33:8080/api/ws"
 PUBLIC_ID = "44a00910-fa93-11ef-94ed-973314b03447"
 
-# --- BUS STOPS IN SUT (6 สถานี) ---
+# --- BUS STOPS IN SUT (6 สาย) พร้อมพิกัดจริง ---
 BUS_STOPS = [
-    {"name": "สถานีเชียว", "stops": [
-        {"name": "อาคารเรียนรวม 1", "lat": 14.8824, "lon": 102.0205},
-        {"name": "อาคารสวนศักดิ์", "lat": 14.8815, "lon": 102.0195},
-        {"name": "โรงอาหารกลาง 1", "lat": 14.8778, "lon": 102.0163},
+    {"name": "สายสีเขียว", "stops": [
+        {"name": "อาคารเรียนรวม 1", "lat": 14.8822, "lon": 102.0217},
+        {"name": "อาคารส่วนกิจการนักศึกษา (หลังใหม่)", "lat": 14.8808, "lon": 102.0192},
+        {"name": "หอพักสุรนิเวศ 1", "lat": 14.8786, "lon": 102.0174},
+        {"name": "หอพักสุรนิเวศ 15", "lat": 14.8768, "lon": 102.0215},
+        {"name": "หอพักสุรนิเวศ 16,18", "lat": 14.8755, "lon": 102.0230},
+        {"name": "โรงอาหารกาสะลองคำ", "lat": 14.8762, "lon": 102.0195},
+        {"name": "หอพักสุรนิเวศ 7-8,11-12", "lat": 14.8752, "lon": 102.0188},
+        {"name": "หอพักสุรนิเวศ 13 B", "lat": 14.8740, "lon": 102.0200},
+        {"name": "หอพักสุรนิเวศ 13 A", "lat": 14.8735, "lon": 102.0210},
     ]},
-    {"name": "สถานีสัมมง", "stops": [
-        {"name": "อาคารเรียนรวม 1", "lat": 14.8824, "lon": 102.0205},
-        {"name": "อาคารสุรพัฒน์", "lat": 14.8845, "lon": 102.0142},
-        {"name": "ประตู 1", "lat": 14.8973, "lon": 102.0253},
+    {"name": "สายสีม่วง", "stops": [
+        {"name": "อาคารเรียนรวม 1", "lat": 14.8822, "lon": 102.0217},
+        {"name": "อาคารส่วนกิจการนักศึกษา (หลังใหม่)", "lat": 14.8808, "lon": 102.0192},
+        {"name": "หอพักสุรนิเวศ 1", "lat": 14.8786, "lon": 102.0174},
+        {"name": "หอพักสุรนิเวศ 2,14", "lat": 14.8778, "lon": 102.0163},
+        {"name": "หอพักสุรนิเวศ 4-5-6", "lat": 14.8765, "lon": 102.0155},
     ]},
-    {"name": "สถานีสัสม", "stops": [
-        {"name": "ห้องสมุด", "lat": 14.8795, "lon": 102.0198},
-        {"name": "อาคารบริหาร", "lat": 14.8818, "lon": 102.0175},
+    {"name": "สายสีส้ม", "stops": [
+        {"name": "อาคารขนส่ง", "lat": 14.8725, "lon": 102.0235},
+        {"name": "อาคารเรียนรวม 2", "lat": 14.8812, "lon": 102.0209},
+        {"name": "อาคารบรรณสาร 1", "lat": 14.8795, "lon": 102.0198},
+        {"name": "อาคารบรรณสาร 2", "lat": 14.8800, "lon": 102.0195},
+        {"name": "อาคารศูนย์เครื่องมือ 1-2-4", "lat": 14.8835, "lon": 102.0180},
+        {"name": "อาคารศูนย์เครื่องมือ 3-5-6", "lat": 14.8840, "lon": 102.0170},
+        {"name": "อาคารศูนย์เครื่องมือ 9-10,11-12", "lat": 14.8850, "lon": 102.0160},
+        {"name": "ครัวท่านท้าว", "lat": 14.8860, "lon": 102.0150},
+        {"name": "อาคารส่วนกิจการนักศึกษา (หลังเก่า)", "lat": 14.8815, "lon": 102.0185},
+    ]},
+    {"name": "สายสีน้ำเงิน", "stops": [
+        {"name": "อาคารขนส่ง", "lat": 14.8725, "lon": 102.0235},
+        {"name": "สุรสัมมนาคาร", "lat": 14.8830, "lon": 102.0140},
+        {"name": "รร.สุรวิวัฒน์", "lat": 14.8850, "lon": 102.0130},
+        {"name": "อาคารส่งเสริมสุขภาพ", "lat": 14.8860, "lon": 102.0115},
+        {"name": "อาคารศูนย์ความเป็นเลิศ", "lat": 14.8870, "lon": 102.0100},
+        {"name": "รพ.มทส.", "lat": 14.8745, "lon": 102.0035},
         {"name": "เทคโนธานี", "lat": 14.8963, "lon": 102.0124},
     ]},
-    {"name": "สถานีนำเจิน", "stops": [
-        {"name": "อาคารสวนศักดิ์", "lat": 14.8815, "lon": 102.0195},
-        {"name": "ศูนย์บรรณสาร", "lat": 14.8795, "lon": 102.0198},
-        {"name": "อาคารบริหาร", "lat": 14.8818, "lon": 102.0175},
+    {"name": "สายสีแดง", "stops": [
+        {"name": "อาคารขนส่ง", "lat": 14.8725, "lon": 102.0235},
+        {"name": "อาคารเรียนรวม 2", "lat": 14.8812, "lon": 102.0209},
+        {"name": "อาคารบรรณสาร 1", "lat": 14.8795, "lon": 102.0198},
+        {"name": "อาคารบรรณสาร 2", "lat": 14.8800, "lon": 102.0195},
+        {"name": "อาคารศูนย์เครื่องมือ 1-2-4", "lat": 14.8835, "lon": 102.0180},
+        {"name": "อาคารศูนย์เครื่องมือ 3-5-6", "lat": 14.8840, "lon": 102.0170},
+        {"name": "อาคารศูนย์เครื่องมือ 9-10,11-12", "lat": 14.8850, "lon": 102.0160},
+        {"name": "ครัวท่านท้าว", "lat": 14.8860, "lon": 102.0150},
+        {"name": "อาคารเรียนรวม 1", "lat": 14.8822, "lon": 102.0217},
+        {"name": "อาคารส่วนกิจการนักศึกษา (หลังใหม่)", "lat": 14.8808, "lon": 102.0192},
+        {"name": "หอพักสุรนิเวศ 15", "lat": 14.8768, "lon": 102.0215},
+        {"name": "หอพักสุรนิเวศ 16,18", "lat": 14.8755, "lon": 102.0230},
+        {"name": "โรงอาหารกาสะลองคำ", "lat": 14.8762, "lon": 102.0195},
+        {"name": "หอพักสุรนิเวศ 7-8,11-12", "lat": 14.8752, "lon": 102.0188},
+        {"name": "หอพักสุรนิเวศ 13 B", "lat": 14.8740, "lon": 102.0200},
+        {"name": "หอพักสุรนิเวศ 13 A", "lat": 14.8735, "lon": 102.0210},
+        {"name": "หอพักสุรนิเวศ 1", "lat": 14.8786, "lon": 102.0174},
+        {"name": "หอพักสุรนิเวศ 2,14", "lat": 14.8778, "lon": 102.0163},
+        {"name": "หอพักสุรนิเวศ 4-5-6", "lat": 14.8765, "lon": 102.0155},
     ]},
-    {"name": "สถานีแสง", "stops": [
-        {"name": "ประตู 1", "lat": 14.8973, "lon": 102.0253},
-        {"name": "เทคโนธานี", "lat": 14.8963, "lon": 102.0124},
-        {"name": "รพ.มทส.", "lat": 14.8745, "lon": 102.0035},
+    {"name": "สายสีเหลือง", "stops": [
+        {"name": "ตลาดหน้า มทส.ประตู 1", "lat": 14.8970, "lon": 102.0250},
+        {"name": "หอพักสุรนิเวศ 15", "lat": 14.8768, "lon": 102.0215},
+        {"name": "หอพักสุรนิเวศ 16,18", "lat": 14.8755, "lon": 102.0230},
+        {"name": "โรงอาหารกาสะลองคำ", "lat": 14.8762, "lon": 102.0195},
+        {"name": "หอพักสุรนิเวศ 7-8,11-12", "lat": 14.8752, "lon": 102.0188},
+        {"name": "หอพักสุรนิเวศ 13 B", "lat": 14.8740, "lon": 102.0200},
+        {"name": "หอพักสุรนิเวศ 13 A", "lat": 14.8735, "lon": 102.0210},
+        {"name": "หอพักสุรนิเวศ 1", "lat": 14.8786, "lon": 102.0174},
+        {"name": "หอพักสุรนิเวศ 2,14", "lat": 14.8778, "lon": 102.0163},
+        {"name": "หอพักสุรนิเวศ 4-5-6", "lat": 14.8765, "lon": 102.0155},
     ]},
-    {"name": "สถานีเตือง", "stops": [
-        {"name": "ประตูหลัก", "lat": 14.8845, "lon": 102.0142},
-        {"name": "ศูนย์บรรณสาร", "lat": 14.8795, "lon": 102.0198},
-        {"name": "รพ.มทส.", "lat": 14.8745, "lon": 102.0035},
-    ]},
-]
-
-# --- SUT LOCATIONS ---
-SUT_LOCATIONS = [
-    {"name": "อาคารเรียนรวม 1", "lat": 14.8824, "lon": 102.0205},
-    {"name": "อาคารเรียนรวม 2", "lat": 14.8812, "lon": 102.0209},
-    {"name": "ศูนย์บรรณสาร", "lat": 14.8795, "lon": 102.0198},
-    {"name": "ประตู 1 มทส.", "lat": 14.8973, "lon": 102.0253},
-    {"name": "โรงอาหารกลาง 1", "lat": 14.8778, "lon": 102.0163},
-    {"name": "อาคารสุรพัฒน์ 2", "lat": 14.8845, "lon": 102.0142},
-    {"name": "รพ.มทส.", "lat": 14.8745, "lon": 102.0035},
-    {"name": "อาคารบริหาร (AD)", "lat": 14.8818, "lon": 102.0175},
 ]
 
 # --- STATE MANAGEMENT ---
@@ -113,32 +142,32 @@ def calculate_distance(lat1, lon1, lat2, lon2):
         return 9999
 
 def get_location_with_bus_stop(lat, lon):
-    """ตรวจสอบป้ายเมล์ก่อน ถ้าใกล้จะแสดงชื่อป้ายเมล์ พร้อมชื่อสถานี"""
+    """ตรวจสอบป้ายเมล์ก่อน (100m) แสดงชื่อป้าย+สาย ถ้าไม่ใกล้ป้ายให้ใช้ Geopy"""
     if lat == "-" or lon == "-" or lat is None:
         return "-"
 
     try:
         curr_lat, curr_lon = float(lat), float(lon)
-        
+
         # 1. ตรวจสอบป้ายเมล์ก่อน (100 เมตร)
+        nearest_stop = None
+        min_dist = 100
         for bus_route in BUS_STOPS:
             for stop in bus_route["stops"]:
                 dist = calculate_distance(curr_lat, curr_lon, stop["lat"], stop["lon"])
-                if dist < 100:  # ใกล้ป้ายเมล์
-                    return f"{stop['name']} [{bus_route['name']}]"
-        
-        # 2. ถ้าไม่ใกล้ป้ายเมล์ ให้ตรวจสอบตึกที่รู้จัก (80 เมตร)
-        for loc in SUT_LOCATIONS:
-            dist = calculate_distance(curr_lat, curr_lon, loc["lat"], loc["lon"])
-            if dist < 80:
-                return loc["name"]
-        
-        # 3. ถ้าไม่ใกล้อะไร ให้ใช้ Geopy
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_stop = f"{stop['name']} [{bus_route['name']}]"
+
+        if nearest_stop:
+            return nearest_stop
+
+        # 2. ถ้าไม่ใกล้ป้ายเมล์ ให้ใช้ Geopy
         cache_key = (round(curr_lat, 4), round(curr_lon, 4))
         with location_lock:
             if cache_key in location_cache:
                 return location_cache[cache_key]
-        
+
         location = geolocator.reverse(f"{lat}, {lon}", language='th', timeout=10)
         if location:
             raw = location.raw.get('address', {})
@@ -149,7 +178,7 @@ def get_location_with_bus_stop(lat, lon):
                 raw.get('highway') or
                 raw.get('suburb') or
                 raw.get('village') or
-                "มทส."
+                "ภายใน มทส."
             )
             with location_lock:
                 location_cache[cache_key] = place
@@ -192,14 +221,14 @@ def print_bus_table():
                 "status": get_value(entity, "TIME_SERIES", "status") or "-",
                 "seats": get_value(entity, "TIME_SERIES", "availableSeats") or "-",
             })
-    
+
     rows.sort(key=lambda x: str(x["name"]))
     os.system("cls" if os.name == "nt" else "clear")
     print(f"[{now_str()}] SUT BUS TRACKER (Bus Stop Detection Active)")
     print("-" * 140)
-    print(f"{'NAME':18} {'LAT':12} {'LON':12} {'LOCATION (Bus Stop Priority)':60} {'SPEED':8} {'STATUS':15} {'SEATS':5}")
+    print(f"{'NAME':18} {'LAT':12} {'LON':12} {'LOCATION':60} {'SPEED':8} {'STATUS':15} {'SEATS':5}")
     print("-" * 140)
-    
+
     for r in rows:
         lat_str = f"{float(r['lat']):.8f}" if r['lat'] != "-" else "-"
         lon_str = f"{float(r['lon']):.8f}" if r['lon'] != "-" else "-"
@@ -224,19 +253,17 @@ def print_single_update(item: dict):
     speed = get_value(entity, "TIME_SERIES", "speed") or "-"
     status = get_value(entity, "TIME_SERIES", "status") or "-"
     location = get_location_with_bus_stop(lat, lon)
-    
-    print(f"[{now_str()}] [UPDATE] {name} | lat={lat} lon={lon} location={location} speed={speed} status={status}")
+    print(f"[{now_str()}] [UPDATE] {name} | location={location} speed={speed} status={status}")
 
 # --- WEBSOCKET HANDLERS ---
 def on_message(ws, message):
     try:
         msg = json.loads(message)
-        
-        # Check for errors
+
         if msg.get("errorCode", 0) != 0:
             print(f"[{now_str()}] [ERROR] Server error: {msg.get('errorMsg')}")
             return
-        
+
         # Initial snapshot
         data_section = msg.get("data")
         if data_section and data_section.get("data"):
@@ -244,7 +271,7 @@ def on_message(ws, message):
                 merge_entity(item)
             print(f"[{now_str()}] [SNAPSHOT] Received {len(data_section['data'])} entities")
             print_bus_table()
-        
+
         # Incremental updates
         update_section = msg.get("update")
         if update_section:
@@ -252,15 +279,14 @@ def on_message(ws, message):
                 merge_entity(item)
                 print_single_update(item)
             print_bus_table()
-    
+
     except Exception as e:
         print(f"[{now_str()}] [ERROR] Message parse error: {e}")
 
 def on_open(ws):
     print(f"[{now_str()}] [CONNECT] WebSocket connected")
     ensure_token()
-    
-    # Send authentication
+
     auth_payload = {
         "authCmd": {
             "cmdId": 0,
@@ -269,8 +295,7 @@ def on_open(ws):
     }
     ws.send(json.dumps(auth_payload))
     print(f"[{now_str()}] [OK] Sent authentication")
-    
-    # Send subscription
+
     keys = [
         {"type": "TIME_SERIES", "key": "latitude"},
         {"type": "TIME_SERIES", "key": "longitude"},
@@ -278,7 +303,7 @@ def on_open(ws):
         {"type": "TIME_SERIES", "key": "status"},
         {"type": "TIME_SERIES", "key": "availableSeats"}
     ]
-    
+
     sub_payload = {
         "cmds": [
             {
@@ -339,7 +364,7 @@ def run_forever():
         try:
             ensure_token()
             print(f"[{now_str()}] [INFO] Starting WebSocket connection...")
-            
+
             ws_app = websocket.WebSocketApp(
                 WS_URL,
                 header={"Origin": BASE_URL},
@@ -348,12 +373,12 @@ def run_forever():
                 on_error=on_error,
                 on_close=on_close
             )
-            
+
             ws_app.run_forever(ping_interval=20, ping_timeout=10)
-        
+
         except Exception as e:
             print(f"[{now_str()}] [ERROR] Connection failed: {e}")
-        
+
         print(f"[{now_str()}] [INFO] Reconnecting in 5 seconds...")
         time.sleep(5)
 
