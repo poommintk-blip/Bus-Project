@@ -56,52 +56,39 @@ def decode_jwt_exp(token: str) -> int:
     except: return 0
 
 # ─────────────────────────────────────────────
-# DATABASE: ดึงอีเมลแบบเรียงลำดับ ID[cite: 1]
+# DATABASE FUNCTIONS
 # ─────────────────────────────────────────────
 def get_subscribers_from_db(bus_name):
-    """ดึงรายชื่ออีเมลจาก Database ที่ติดตามรถคันนี้ โดยเรียงลำดับตาม ID"""
+    """ดึงรายชื่ออีเมลผู้ใช้ที่เปิดรับการแจ้งเตือน (active = 1) จากตาราง users"""
     emails = []
     try:
         conn = sqlite3.connect(DB_NAME, check_same_thread=False)
         cursor = conn.cursor()
-        # ใช้ GROUP BY และ ORDER BY เพื่อให้ส่งหาคนแรกที่สมัครก่อนเสมอ[cite: 1]
-        cursor.execute("""
-            SELECT user_email 
-            FROM subscriptions 
-            WHERE bus_name = ? OR bus_name = 'ALL'
-            GROUP BY user_email 
-            ORDER BY MIN(id) ASC
-        """, (bus_name,))
+        # ดึงอีเมลของผู้ใช้ที่ล็อกอินและเปิดสถานะ 'รับแจ้งเตือน' ไว้ในระบบเว็บ
+        cursor.execute("SELECT email FROM users WHERE active = 1")
         emails = [row[0] for row in cursor.fetchall()]
         conn.close()
     except Exception as e:
-        print(f"[{now_str()}] ❌ Database Error: {e}")
+        print(f"[{now_str()}] ❌ Database Read Error: {e}")
     return emails
 
-# ─────────────────────────────────────────────
-# TOKEN MANAGEMENT
-# ─────────────────────────────────────────────
-def fetch_new_token():
+def save_notification_to_db(bus_name, message):
+    """บันทึกประวัติการแจ้งเตือนลงตาราง notifications เพื่อแสดงผลบนหน้าเว็บ"""
     try:
-        url = f"{BASE_URL}/api/auth/login/public"
-        r = requests.post(url, json={"publicId": PUBLIC_ID}, timeout=15)
-        r.raise_for_status()
-        token = r.json()["token"]
-        token_info["token"] = token
-        token_info["exp"] = decode_jwt_exp(token)
-        print(f"[{now_str()}] 🔑 token refreshed, exp={datetime.fromtimestamp(token_info['exp']).strftime('%H:%M:%S')}")
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO notifications (bus_name, message, sent_at) 
+            VALUES (?, ?, ?)
+        """, (bus_name, message, now_str()))
+        conn.commit()
+        conn.close()
+        print(f"[{now_str()}] 💾 บันทึกประวัติการแจ้งเตือน: {bus_name}")
     except Exception as e:
-        print(f"[{now_str()}] ❌ Token Error: {e}")
-
-def token_needs_refresh() -> bool:
-    return not token_info["token"] or time.time() >= (token_info["exp"] - TOKEN_REFRESH_MARGIN)
-
-def ensure_token():
-    if token_needs_refresh():
-        fetch_new_token()
+        print(f"[{now_str()}] ❌ Database Save Error: {e}")
 
 # ─────────────────────────────────────────────
-# EMAIL NOTIFICATION (ส่งทีละเมลตามลำดับจาก DB)
+# EMAIL & NOTIFICATION LOGIC
 # ─────────────────────────────────────────────
 def send_email_to_subscribers(bus_name, label, lat, lon, route, seats, status, notif_type="departing"):
     recipients = get_subscribers_from_db(bus_name)
@@ -112,10 +99,10 @@ def send_email_to_subscribers(bus_name, label, lat, lon, route, seats, status, n
     
     if notif_type == "departing":
         event_th, event_emoji, grad = "รถกำลังออก", "🚌", "linear-gradient(135deg,#f59e0b,#d97706)"
+        subject = f"🚌 รถกำลังออก: {bus_name} (สาย {route})"
     else:
         event_th, event_emoji, grad = "รถออกแล้ว", "🚀", "linear-gradient(135deg,#ef4444,#b91c1c)"
-
-    subject = f"{event_emoji} {event_th}: {bus_name} (สาย {route})"
+        subject = f"🚀 รถออกแล้ว: {bus_name} (สาย {route})"
 
     for email in recipients:
         msg = MIMEMultipart("alternative")
@@ -134,7 +121,7 @@ def send_email_to_subscribers(bus_name, label, lat, lon, route, seats, status, n
             <div style="padding:25px; color:#333;">
               <p><b>รถ:</b> {bus_name} ({label})</p>
               <p><b>สาย:</b> {route} | <b>ที่นั่งว่าง:</b> {seats}</p>
-              <p><b>สถานะปัจจุบัน:</b> {status}</p>
+              <p><b>สถานะ:</b> {status}</p>
               <a href="{maps_link}" style="display:block; text-align:center; background:#1a73e8; color:#fff; padding:12px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:20px;">📍 ดูตำแหน่งใน Google Maps</a>
             </div>
           </div>
@@ -148,9 +135,13 @@ def send_email_to_subscribers(bus_name, label, lat, lon, route, seats, status, n
                 server.starttls()
                 server.login(EMAIL_SENDER, EMAIL_PASSWORD)
                 server.sendmail(EMAIL_SENDER, email, msg.as_bytes())
-            print(f"[{now_str()}] ✉️ ส่งสำเร็จ → {email} ({bus_name})")
+            print(f"[{now_str()}] ✉️ ส่งแจ้งเตือนสำเร็จ → {email}")
         except Exception as e:
-            print(f"[{now_str()}] ❌ ส่งล้มเหลว ({email}): {e}")
+            print(f"[{now_str()}] ❌ ส่งหา {email} ล้มเหลว: {e}")
+
+    # บันทึกข้อมูลลงฐานข้อมูลหลังจากส่งเมลเพื่อให้หน้าเว็บดึงไปโชว์ประวัติในช่อง 'แจ้งเตือน'
+    msg_history = "กำลังออกจากสถานี" if notif_type == "departing" else "ออกรถแล้ว"
+    save_notification_to_db(bus_name, msg_history)
 
 # ─────────────────────────────────────────────
 # DEPARTURE DETECTION LOGIC
@@ -220,16 +211,16 @@ def check_and_notify(entity_id: str):
         threading.Thread(target=send_email_to_subscribers, kwargs={**email_args, "notif_type": "departed"}, daemon=True).start()
 
 # ─────────────────────────────────────────────
-# WEBSOCKET & MAIN
+# CORE: WebSocket & Main
 # ─────────────────────────────────────────────
-def build_subscribe_payload():
-    keys = [{"type": "TIME_SERIES", "key": k} for k in ["latitude", "longitude", "speed", "status", "route", "Label", "availableSeats"]]
-    return {"cmds": [{"type": "ENTITY_DATA", "cmdId": 1, "query": {
-        "entityFilter": {"type": "deviceType", "resolveMultiple": True, "deviceTypes": ["bus"]},
-        "pageLink": {"pageSize": 100},
-        "entityFields": [{"type": "ENTITY_FIELD", "key": "name"}, {"type": "ENTITY_FIELD", "key": "label"}],
-        "latestValues": keys,
-    }, "latestCmd": {"keys": keys}}]}
+def fetch_new_token():
+    try:
+        r = requests.post(f"{BASE_URL}/api/auth/login/public", json={"publicId": PUBLIC_ID}, timeout=15)
+        r.raise_for_status()
+        token = r.json()["token"]
+        token_info["token"], token_info["exp"] = token, decode_jwt_exp(token)
+        print(f"[{now_str()}] 🔑 Token Refreshed")
+    except Exception as e: print(f"Token Error: {e}")
 
 def on_message(ws, message):
     msg = json.loads(message)
@@ -246,12 +237,14 @@ def on_message(ws, message):
 def on_open(ws):
     print(f"[{now_str()}] 🌐 WebSocket Connected")
     ws.send(json.dumps({"authCmd": {"cmdId": 0, "token": token_info["token"]}}))
-    ws.send(json.dumps(build_subscribe_payload()))
+    keys = [{"type": "TIME_SERIES", "key": k} for k in ["latitude", "longitude", "speed", "status", "route", "Label", "availableSeats"]]
+    sub_payload = {"cmds": [{"type": "ENTITY_DATA", "cmdId": 1, "query": {"entityFilter": {"type": "deviceType", "deviceTypes": ["bus"]}, "pageLink": {"pageSize": 100}, "entityFields": [{"type": "ENTITY_FIELD", "key": "name"}, {"type": "ENTITY_FIELD", "key": "label"}], "latestValues": keys}, "latestCmd": {"keys": keys}}]}
+    ws.send(json.dumps(sub_payload))
 
 def run_forever():
     while True:
         try:
-            ensure_token()
+            if not token_info["token"] or time.time() >= (token_info["exp"] - TOKEN_REFRESH_MARGIN): fetch_new_token()
             global ws_app
             ws_app = websocket.WebSocketApp(WS_URL, header={"Origin": BASE_URL}, on_open=on_open, on_message=on_message)
             ws_app.run_forever(ping_interval=PING_INTERVAL, ping_timeout=PING_TIMEOUT)

@@ -1,169 +1,415 @@
-import requests, websocket, json, time, threading, os, base64, math, smtplib
+import socket
+import json
+import time
+import threading
+import os
+import smtplib
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+
 # --- CONFIGURATION ---
-BASE_URL = "http://203.158.3.33:8080"
-WS_URL = "ws://203.158.3.33:8080/api/ws"
-PUBLIC_ID = "44a00910-fa93-11ef-94ed-973314b03447"
+SERVER_HOST = "127.0.0.1"
+SERVER_PORT = 9000
 
 SMTP_CONFIG = {
     "server": "smtp.gmail.com",
     "port": 587,
     "email": "sutnewbus.send@gmail.com",
-    "password": "ucki eult ftjq mddn" 
+    "password": "ucki eult ftjq mddn",
 }
 
-# ฐานข้อมูลสถานที่สำคัญ
-SUT_LOCATIONS = [
-    {"name": "หอพักหญิง S1-S6", "lat": 14.8765, "lon": 102.0165},
-    {"name": "หอพักชาย S7-S12", "lat": 14.8752, "lon": 102.0188},
-    {"name": "หอพักหญิง S15", "lat": 14.8768, "lon": 102.0215},
-    {"name": "อาคารเรียนรวม 1 (B1)", "lat": 14.8824, "lon": 102.0205},
-    {"name": "อาคารเรียนรวม 2 (B2)", "lat": 14.8812, "lon": 102.0209},
-    {"name": "ศูนย์บรรณสาร (ห้องสมุด)", "lat": 14.8795, "lon": 102.0198},
-    {"name": "อาคารบริหาร (AD)", "lat": 14.8818, "lon": 102.0175},
-    {"name": "เทคโนธานี", "lat": 14.8963, "lon": 102.0124},
-]
 
-# --- STATE ---
-bus_state = {}
-state_lock = threading.Lock()
-token_info = {"token": None, "exp": 0}
-target_bus_id = None
-user_email = ""
-email_submitted = threading.Event() # เช็คว่าพิมพ์เมลเสร็จหรือยัง
-task_completed = threading.Event()
+# --- ตัวแปรระบบ ---
+local_bus_data = {}
+data_lock = threading.Lock()
+running = True
 
-# --- FUNCTIONS ---
-def calculate_distance(lat1, lon1, lat2, lon2):
-    try: return math.sqrt((float(lat1) - lat2)**2 + (float(lon1) - lon2)**2) * 111319
-    except: return 9999
 
-def get_place_name(lat, lon):
-    if not lat or not lon or lat == 0: return "กำลังระบุตำแหน่ง..."
+# =====================================================================
+# ส่วนที่ 1: ดึงข้อมูลจาก Server (Persistent Connection)
+# =====================================================================
+
+def fetch_data_loop():
+    """เชื่อมต่อครั้งเดียว แล้วส่ง GET_BUS ซ้ำผ่าน socket เดิม"""
+    global local_bus_data
+    while running:
+        sock = None
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5)
+            sock.connect((SERVER_HOST, SERVER_PORT))
+
+            while running:
+                sock.sendall(b"GET_BUS")
+
+                buf = b""
+                while b"\n" not in buf:
+                    chunk = sock.recv(65536)
+                    if not chunk:
+                        raise ConnectionError("Server ปิดการเชื่อมต่อ")
+                    buf += chunk
+
+                line = buf.split(b"\n")[0]
+                result = json.loads(line.decode("utf-8"))
+                with data_lock:
+                    local_bus_data = result
+                time.sleep(1)
+
+        except Exception as e:
+            print(f"[ผิดพลาด] {e} - เชื่อมต่อใหม่ใน 3 วินาที...")
+        finally:
+            if sock:
+                try:
+                    sock.close()
+                except Exception:
+                    pass
+        time.sleep(3)
+
+
+# =====================================================================
+# ส่วนที่ 2: สร้างตารางข้อมูลรถ
+# =====================================================================
+
+def build_table_text():
+    """สร้างตารางรถเมล์เป็นข้อความ ใช้ได้ทั้งแสดงผลและส่งอีเมล"""
+    with data_lock:
+        snapshot = dict(local_bus_data)
+
+    if not snapshot:
+        return None, 0
+
+    rows = sorted(snapshot.values(), key=lambda x: str(x.get("name", "")))
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    lines = []
+    lines.append(f"[{now}] ระบบติดตามรถเมล์ มทส.")
+    lines.append("=" * 120)
+    lines.append(
+        f"{'ชื่อรถ':18} "
+        f"{'ตำแหน่ง':50} "
+        f"{'ความเร็ว':10} "
+        f"{'สถานะ':15} "
+        f"{'ที่นั่ง':6}"
+    )
+    lines.append("-" * 120)
+
+    for r in rows:
+        name = str(r.get("name", "-"))[:18]
+        location = str(r.get("location", "-"))[:50]
+        speed = str(r.get("speed", "0"))[:10]
+        status = str(r.get("status", "-"))[:15]
+        seats = str(r.get("seats", "-"))[:6]
+        lines.append(f"{name:18} {location:50} {speed:10} {status:15} {seats:6}")
+
+    lines.append("=" * 120)
+    lines.append(f"รถทั้งหมด: {len(rows)} คัน")
+
+    return "\n".join(lines), len(rows)
+
+
+def build_table_html():
+    """สร้างตาราง HTML สำหรับส่งอีเมล (อ่านง่ายกว่าข้อความธรรมดา)"""
+    with data_lock:
+        snapshot = dict(local_bus_data)
+
+    if not snapshot:
+        return None
+
+    rows = sorted(snapshot.values(), key=lambda x: str(x.get("name", "")))
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    html = f"""
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }}
+            h2 {{ color: #2c3e50; }}
+            table {{ border-collapse: collapse; width: 100%; }}
+            th {{ background-color: #3498db; color: white; padding: 10px; text-align: left; }}
+            td {{ padding: 8px; border-bottom: 1px solid #ddd; }}
+            tr:nth-child(even) {{ background-color: #f2f2f2; }}
+            tr:hover {{ background-color: #dbeafe; }}
+            .status-on {{ color: #27ae60; font-weight: bold; }}
+            .status-wait {{ color: #e67e22; font-weight: bold; }}
+            .footer {{ margin-top: 20px; color: #7f8c8d; font-size: 12px; }}
+        </style>
+    </head>
+    <body>
+        <h2>ระบบติดตามรถเมล์ มทส.</h2>
+        <p>ข้อมูล ณ เวลา: {now}</p>
+        <table>
+            <tr>
+                <th>ชื่อรถ</th>
+                <th>ตำแหน่ง</th>
+                <th>ความเร็ว</th>
+                <th>สถานะ</th>
+                <th>ที่นั่งว่าง</th>
+            </tr>
+    """
+
+    for r in rows:
+        name = str(r.get("name", "-"))
+        location = str(r.get("location", "-"))
+        speed = str(r.get("speed", "0"))
+        status = str(r.get("status", "-"))
+        seats = str(r.get("seats", "-"))
+
+        if "On route" in status:
+            status_class = "status-on"
+        else:
+            status_class = "status-wait"
+
+        html += f"""
+            <tr>
+                <td>{name}</td>
+                <td>{location}</td>
+                <td>{speed}</td>
+                <td class="{status_class}">{status}</td>
+                <td>{seats}</td>
+            </tr>
+        """
+
+    html += f"""
+        </table>
+        <p class="footer">
+            รถทั้งหมด: {len(rows)} คัน<br>
+            ส่งจากระบบติดตามรถเมล์ มทส. อัตโนมัติ
+        </p>
+    </body>
+    </html>
+    """
+    return html
+
+
+# =====================================================================
+# ส่วนที่ 3: ส่งอีเมล
+# =====================================================================
+
+def send_email(recipient_email):
+    """ส่งตารางรถเมล์ไปยังอีเมลที่ระบุ"""
     try:
-        curr_lat, curr_lon = float(lat), float(lon)
-        for loc in SUT_LOCATIONS:
-            if calculate_distance(curr_lat, curr_lon, loc["lat"], loc["lon"]) < 200:
-                return loc["name"]
-        return "ภายใน มทส."
-    except: return "ไม่ทราบตำแหน่ง"
+        # สร้างเนื้อหา
+        table_text, count = build_table_text()
+        table_html = build_table_html()
 
-def send_notification(bus_name, stop_name):
-    if not user_email or user_email.lower() == 'n': 
-        task_completed.set()
-        return
-    try:
-        msg = MIMEMultipart()
+        if not table_text or not table_html:
+            print("[ผิดพลาด] ยังไม่มีข้อมูลรถ ไม่สามารถส่งอีเมลได้")
+            return False
+
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # สร้างอีเมล
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"สถานะรถเมล์ มทส. - {now} ({count} คัน)"
         msg["From"] = SMTP_CONFIG["email"]
-        msg["To"] = user_email
-        msg["Subject"] = f"[แจ้งเตือน] {bus_name} ถึง {stop_name} แล้ว"
-        body = f"ขณะนี้ {bus_name} ถึง {stop_name} เรียบร้อยแล้ว\nเวลา: {datetime.now().strftime('%H:%M:%S')}"
-        msg.attach(MIMEText(body, "plain"))
+        msg["To"] = recipient_email
+
+        # แนบทั้ง text และ html (อีเมลจะเลือก html ถ้ารองรับ)
+        msg.attach(MIMEText(table_text, "plain", "utf-8"))
+        msg.attach(MIMEText(table_html, "html", "utf-8"))
+
+        # ส่ง
+        print(f"[อีเมล] กำลังส่งไปยัง {recipient_email}...")
         with smtplib.SMTP(SMTP_CONFIG["server"], SMTP_CONFIG["port"]) as server:
             server.starttls()
             server.login(SMTP_CONFIG["email"], SMTP_CONFIG["password"])
             server.send_message(msg)
-        task_completed.set()
-    except: task_completed.set()
 
-def print_single_bus_view():
-    """หน้าจอติดตามที่จะอัปเดตตลอดเวลาแม้กำลังพิมพ์เมล"""
-    while not task_completed.is_set():
-        with state_lock:
-            bus = bus_state.get(target_bus_id)
-        
-        if bus and bus.get("lat") != 0:
+        print(f"[อีเมล] ส่งสำเร็จไปยัง {recipient_email}")
+        return True
+
+    except smtplib.SMTPAuthenticationError:
+        print("[ผิดพลาด] รหัสผ่านอีเมลไม่ถูกต้อง หรือยังไม่ได้เปิด App Password")
+        return False
+    except smtplib.SMTPRecipientsRefused:
+        print(f"[ผิดพลาด] อีเมลปลายทางไม่ถูกต้อง: {recipient_email}")
+        return False
+    except Exception as e:
+        print(f"[ผิดพลาด] ส่งอีเมลล้มเหลว: {e}")
+        return False
+
+
+# =====================================================================
+# ส่วนที่ 4: แสดงผลรถทั้งหมด
+# =====================================================================
+
+def display_all_buses():
+    """แสดงตารางรถทั้งหมด วนซ้ำอัตโนมัติ"""
+    while running:
+        table_text, count = build_table_text()
+        if table_text:
             os.system("cls" if os.name == "nt" else "clear")
-            now = datetime.now().strftime("%H:%M:%S")
-            print(f"--- Tracking: {bus['name']} | {now} ---")
-            print("=" * 110)
-            print(f"{'NAME':20} {'LOCATION (SUT)':35} {'STATUS':18} {'SEATS LEFT':10}")
-            print("-" * 110)
-            
-            place = get_place_name(bus.get("lat"), bus.get("lon"))
-            print(f"{bus['name']:20} {place:35} {bus.get('status', 'On route'):18} {bus.get('seats', '40'):10}")
-            print("=" * 110)
-            
-            if not email_submitted.is_set():
-                print(f"[ระบบ] กรุณาพิมพ์อีเมลด้านล่างเพื่อรับแจ้งเตือน (หรือพิมพ์ 'n' เพื่อข้าม)")
-                print(f">>> อีเมล: {user_email}", end="\r") # แสดงสิ่งที่กำลังพิมพ์
-            else:
-                print(f"[ระบบ] สถานะแจ้งเตือน: {user_email if user_email != 'n' else 'ปิดการแจ้งเตือน'}")
-                print(f"[ระบบ] กำลังเฝ้าติดตามจนกว่าจะถึงป้าย...")
-        
-        time.sleep(1)
+            print(table_text)
+            print("[คำสั่ง] กด Ctrl+C เพื่อกลับเมนู")
+        time.sleep(2)
 
-def on_message(ws, message):
+
+# =====================================================================
+# ส่วนที่ 5: ติดตามรถเฉพาะคัน
+# =====================================================================
+
+def track_single_bus(bus_id, bus_name):
+    """ติดตามรถคันเดียว แสดงรายละเอียด"""
+    print(f"\n[ติดตาม] กำลังติดตาม: {bus_name}")
+    print("[ติดตาม] กด Ctrl+C เพื่อกลับเมนูหลัก\n")
+
     try:
-        msg = json.loads(message)
-        data = msg.get("data", {}).get("data") or msg.get("update")
-        if data:
-            with state_lock:
-                for item in data:
-                    eid = item["entityId"]["id"]
-                    if eid not in bus_state: 
-                        bus_state[eid] = {"name": "-", "lat": 0, "lon": 0, "status": "-", "seats": "-"}
-                    latest = item.get("latest", {})
-                    if "ENTITY_FIELD" in latest:
-                        bus_state[eid]["name"] = latest["ENTITY_FIELD"].get("name", {}).get("value", "-")
-                    if "TIME_SERIES" in latest:
-                        ts = latest["TIME_SERIES"]
-                        if "latitude" in ts: bus_state[eid]["lat"] = ts["latitude"].get("value")
-                        if "longitude" in ts: bus_state[eid]["lon"] = ts["longitude"].get("value")
-                        if "status" in ts: bus_state[eid]["status"] = ts["status"].get("value")
-                        if "availableSeats" in ts: bus_state[eid]["seats"] = ts["availableSeats"].get("value")
-                    
-                    if eid == target_bus_id and not task_completed.is_set():
-                        # ตรวจสอบรัศมี 30 เมตรเพื่อส่งเมล
-                        for loc in SUT_LOCATIONS:
-                            if calculate_distance(bus_state[eid]["lat"], bus_state[eid]["lon"], loc["lat"], loc["lon"]) < 30:
-                                send_notification(bus_state[eid]["name"], loc["name"])
-                                break
-    except: pass
+        while running:
+            with data_lock:
+                bus = local_bus_data.get(bus_id)
 
-def run_ws():
-    def on_open(ws):
-        ws.send(json.dumps({"authCmd": {"cmdId": 0, "token": token_info["token"]}}))
-        keys = [{"type": "TIME_SERIES", "key": k} for k in ["latitude", "longitude", "status", "availableSeats"]]
-        sub = {"cmds": [{"type": "ENTITY_DATA", "query": {"entityFilter": {"type": "deviceType", "resolveMultiple": True, "deviceTypes": ["bus"]},
-               "pageLink": {"page": 0, "pageSize": 100}, "entityFields": [{"type": "ENTITY_FIELD", "key": "name"}], "latestValues": keys}, "cmdId": 1}]}
-        ws.send(json.dumps(sub))
-    ws = websocket.WebSocketApp(WS_URL, header={"Origin": BASE_URL}, on_open=on_open, on_message=on_message)
-    ws.run_forever()
+            if bus:
+                os.system("cls" if os.name == "nt" else "clear")
+                now = datetime.now().strftime("%H:%M:%S")
+                print(f"--- ติดตาม: {bus.get('name', '-')} | {now} ---")
+                print("=" * 80)
+                print(f"  ชื่อรถ       : {bus.get('name', '-')}")
+                print(f"  ตำแหน่ง      : {bus.get('location', '-')}")
+                print(f"  ละติจูด      : {bus.get('latitude', '-')}")
+                print(f"  ลองจิจูด     : {bus.get('longitude', '-')}")
+                print(f"  ความเร็ว     : {bus.get('speed', '0')}")
+                print(f"  สถานะ        : {bus.get('status', '-')}")
+                print(f"  ที่นั่งว่าง  : {bus.get('seats', '-')}")
+                print(f"  อัปเดตล่าสุด : {bus.get('updated_at', '-')}")
+                print("=" * 80)
+                print("[กด Ctrl+C เพื่อกลับเมนูหลัก]")
+            else:
+                print(f"[รอ] ยังไม่ได้รับข้อมูลของ {bus_name}...")
+
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n[กลับ] กลับเมนูหลัก...")
+
+
+# =====================================================================
+# ส่วนที่ 6: เมนูเลือกรถ (เพิ่มตัวเลือกส่งอีเมล)
+# =====================================================================
+
+def show_bus_menu():
+    """แสดงรายชื่อรถให้เลือก พร้อมตัวเลือกส่งอีเมล"""
+    with data_lock:
+        snapshot = dict(local_bus_data)
+
+    if not snapshot:
+        print("[รอ] ยังไม่มีข้อมูลรถ กรุณารอสักครู่...")
+        return None, None
+
+    buses = []
+    for eid, data in sorted(snapshot.items(), key=lambda x: str(x[1].get("name", ""))):
+        buses.append({"id": eid, "name": data.get("name", "-")})
+
+    print("\n" + "=" * 50)
+    print("  ระบบติดตามรถเมล์ มทส. (Client)")
+    print("=" * 50)
+    print("  0. แสดงรถทั้งหมด (ตาราง)")
+    print("-" * 50)
+    for i, b in enumerate(buses, 1):
+        print(f"  {i}. ติดตาม {b['name']}")
+    print("-" * 50)
+    print(f"  E. ส่งตารางรถทั้งหมดทางอีเมล")
+    print("=" * 50)
+
+    try:
+        choice = input("เลือกหมายเลข (หรือ E): ").strip()
+
+        if choice.upper() == "E":
+            return "__EMAIL__", None
+
+        choice_num = int(choice)
+        if choice_num == 0:
+            return "__ALL__", None
+        if 1 <= choice_num <= len(buses):
+            return buses[choice_num - 1]["id"], buses[choice_num - 1]["name"]
+    except (ValueError, IndexError):
+        pass
+
+    print("[ผิดพลาด] หมายเลขไม่ถูกต้อง")
+    return None, None
+
+
+def handle_email_menu():
+    """เมนูส่งอีเมล"""
+    print("\n" + "=" * 50)
+    print("  ส่งตารางรถเมล์ทางอีเมล")
+    print("=" * 50)
+
+    # แสดงตัวอย่างตาราง
+    table_text, count = build_table_text()
+    if table_text:
+        print("\n--- ตัวอย่างข้อมูลที่จะส่ง ---")
+        print(table_text)
+        print("--- จบตัวอย่าง ---\n")
+    else:
+        print("[ผิดพลาด] ยังไม่มีข้อมูลรถ")
+        return
+
+    email = input("พิมพ์อีเมลผู้รับ (หรือ 'n' เพื่อยกเลิก): ").strip()
+
+    if email.lower() == "n" or not email:
+        print("[ยกเลิก] กลับเมนูหลัก")
+        return
+
+    # ตรวจสอบรูปแบบอีเมลเบื้องต้น
+    if "@" not in email or "." not in email:
+        print("[ผิดพลาด] รูปแบบอีเมลไม่ถูกต้อง")
+        return
+
+    # ยืนยัน
+    confirm = input(f"ยืนยันส่งไปยัง {email}? (y/n): ").strip().lower()
+    if confirm != "y":
+        print("[ยกเลิก] ไม่ส่งอีเมล")
+        return
+
+    # ส่ง (ใน thread แยก เพื่อไม่ให้ค้าง)
+    print("[อีเมล] กำลังส่ง...")
+    success = send_email(email)
+
+    if success:
+        input("\n[สำเร็จ] กด Enter เพื่อกลับเมนูหลัก...")
+    else:
+        input("\n[ล้มเหลว] กด Enter เพื่อกลับเมนูหลัก...")
+
+
+# =====================================================================
+# จุดเริ่มต้น
+# =====================================================================
 
 if __name__ == "__main__":
-    r = requests.post(f"{BASE_URL}/api/auth/login/public", json={"publicId": PUBLIC_ID})
-    token_info["token"] = r.json()["token"]
-    threading.Thread(target=run_ws, daemon=True).start()
-    
-    print("กำลังโหลดรายชื่อรถเมล์...")
+    print("=" * 50)
+    print("  ระบบติดตามรถเมล์ มทส. (Client)")
+    print(f"  เชื่อมต่อ: {SERVER_HOST}:{SERVER_PORT}")
+    print("=" * 50)
+
+    # เริ่ม Thread ดึงข้อมูล (Persistent Connection)
+    threading.Thread(target=fetch_data_loop, daemon=True).start()
+
+    print("\n[กำลังขอข้อมูลจาก Server...]")
     time.sleep(3)
 
-    os.system("cls" if os.name == "nt" else "clear")
-    print("=== เลือกคันที่ต้องการติดตามเจาะจง ===")
-    buses = []
-    with state_lock:
-        for eid, info in bus_state.items():
-            if info["name"] != "-": buses.append({"id": eid, "name": info["name"]})
-    
-    buses.sort(key=lambda x: x["name"])
-    for i, b in enumerate(buses, 1):
-        print(f"{i}: {b['name']}")
-    
-    choice = int(input("\nกรอกหมายเลขรถที่ต้องการติดตาม: "))
-    target_bus_id = buses[choice-1]["id"]
+    try:
+        while running:
+            bus_id, bus_name = show_bus_menu()
 
-    # เริ่มหน้าจอ Tracking ทันที
-    threading.Thread(target=print_single_bus_view, daemon=True).start()
+            if bus_id is None:
+                time.sleep(1)
+                continue
 
-    # รับอีเมลแบบไม่ขวางการทำงาน
-    user_email = input().strip()
-    email_submitted.set()
-    
-    while not task_completed.is_set():
-        time.sleep(1)
-    
-    print(f"\n[เสร็จสิ้น] ระบบแจ้งเตือนเรียบร้อยแล้ว")
+            if bus_id == "__ALL__":
+                try:
+                    display_all_buses()
+                except KeyboardInterrupt:
+                    print("\n[กลับ] กลับเมนูเลือกรถ...")
+                    continue
+
+            elif bus_id == "__EMAIL__":
+                handle_email_menu()
+
+            else:
+                track_single_bus(bus_id, bus_name)
+
+    except KeyboardInterrupt:
+        print("\n\n[จบการทำงาน] ปิดโปรแกรม")
+        running = False
